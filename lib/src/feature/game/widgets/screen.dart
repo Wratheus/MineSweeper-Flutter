@@ -80,12 +80,23 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   Future<void> _updateWindowSize() async {
     const double cellSize = 32;
     const double horizontalPadding = 32;
-    const double verticalPadding = 120;
+    const double appBarHeight = 56; // Стандартная высота AppBar
+    const double verticalPadding = 120 + appBarHeight;
+
+    const double spacing = 1;
+
+    final double totalSpacingWidth = (game.difficulty.size.width - 1) * spacing;
+    final double totalSpacingHeight =
+        (game.difficulty.size.height - 1) * spacing;
 
     final double width =
-        game.difficulty.size.width * cellSize + horizontalPadding;
+        game.difficulty.size.width * cellSize +
+        horizontalPadding +
+        totalSpacingWidth;
     final double height =
-        game.difficulty.size.height * cellSize + verticalPadding;
+        game.difficulty.size.height * cellSize +
+        verticalPadding +
+        totalSpacingHeight;
 
     final Screen? screen = await getCurrentScreen();
     if (screen == null) return;
@@ -142,6 +153,7 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
             ),
             Flexible(
               child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
                   mainAxisSpacing: 1,
