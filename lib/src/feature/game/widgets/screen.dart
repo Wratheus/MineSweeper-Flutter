@@ -83,7 +83,13 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
       appBar: AppBar(
         actions: [
           _buildDifficultySelector(),
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _startNewGame),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _startNewGame,
+            ),
+          ),
         ],
       ),
       body: Padding(
