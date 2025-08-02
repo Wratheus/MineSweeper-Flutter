@@ -5,6 +5,7 @@ import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
 import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
+import 'package:window_size/window_size.dart';
 
 class MinesweeperGameplayScreen extends StatefulWidget {
   const MinesweeperGameplayScreen({super.key});
@@ -25,6 +26,7 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   void initState() {
     super.initState();
     game = Game(difficulty: selectedDifficulty);
+    _updateWindowSize();
     stopwatch = Stopwatch();
     ticker = Ticker((_) {
       if (stopwatch.isRunning) {
@@ -45,6 +47,7 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   void _startNewGame() {
     setState(() {
       game = Game(difficulty: selectedDifficulty);
+      _updateWindowSize();
       stopwatch
         ..reset()
         ..start();
@@ -72,6 +75,29 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
     if (game.state == GameState.playing) {
       setState(() => game.flag.toggleFlag(coord));
     }
+  }
+
+  Future<void> _updateWindowSize() async {
+    const double cellSize = 32;
+    const double horizontalPadding = 32;
+    const double verticalPadding = 120;
+
+    final double width =
+        game.difficulty.size.width * cellSize + horizontalPadding;
+    final double height =
+        game.difficulty.size.height * cellSize + verticalPadding;
+
+    final Screen? screen = await getCurrentScreen();
+    if (screen == null) return;
+
+    setWindowFrame(
+      Rect.fromLTWH(
+        (screen.frame.width - width) / 2,
+        (screen.frame.height - height) / 2,
+        width,
+        height,
+      ),
+    );
   }
 
   @override
