@@ -45,7 +45,7 @@ jobs:
         run: flutter pub get
         shell: bash
 
-              - name: Precache Flutter macOS artifacts
+      - name: Precache Flutter macOS artifacts
         if: matrix.flutter-target == 'macos'
         run: flutter precache --macos
         shell: bash
