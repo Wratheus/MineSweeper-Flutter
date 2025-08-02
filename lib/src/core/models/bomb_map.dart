@@ -19,19 +19,19 @@ class BombMap {
   Cell? cellByCoord(Coord coord) => map.getCell(coord);
 
   void _placeBombs() {
-    int i = 0;
-    while (i < bombsCount) {
-      final bomb = _getRandomCoord();
-      if (cellByCoord(bomb) != Cell.bomb) {
-        map.setCell(bomb, Cell.bomb);
-        _placeNumbersAroundBomb(bomb);
-        i++;
+    final allCoords = <Coord>[];
+    for (int x = 0; x < map.size.width; x++) {
+      for (int y = 0; y < map.size.height; y++) {
+        allCoords.add(Coord(x, y));
       }
     }
+    allCoords.shuffle(_random);
+    for (int i = 0; i < bombsCount; i++) {
+      final bomb = allCoords[i];
+      map.setCell(bomb, Cell.bomb);
+      _placeNumbersAroundBomb(bomb);
+    }
   }
-
-  Coord _getRandomCoord() =>
-      Coord(_random.nextInt(map.size.width), _random.nextInt(map.size.height));
 
   void _placeNumbersAroundBomb(Coord bomb) {
     for (final Coord around in bomb.getCoordsAround(map.size)) {

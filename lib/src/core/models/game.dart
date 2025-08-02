@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:minesweeper/src/core/models/atoms/cell.dart';
 import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
@@ -11,14 +9,20 @@ enum GameState { start, playing, lose, win }
 class Game {
   Game({required this.difficulty})
     : bomb = BombMap(bombsCount: difficulty.mines, size: difficulty.size),
-      flag = FlagMap(size: difficulty.size);
+      flag = FlagMap(size: difficulty.size),
+      _checked = List.filled(difficulty.size.squareSize, false);
 
   final BombMap bomb;
   final FlagMap flag;
   final Difficulty difficulty;
+  final List<bool> _checked;
+
   GameState state = GameState.start;
 
-  final Set<Coord> _checkedCells = HashSet();
+  bool _isChecked(Coord c) => _checked[c.x + c.y * difficulty.size.width];
+
+  void _setChecked(Coord c) =>
+      _checked[c.x + c.y * difficulty.size.width] = true;
 
   Cell getCell(Coord coord) {
     final Cell? cellByCoord = flag.get(coord);
@@ -35,8 +39,8 @@ class Game {
 
   void _revealAround(Coord coord) {
     for (final Coord around in coord.getCoordsAround(difficulty.size)) {
-      if (!_checkedCells.contains(around)) {
-        _checkedCells.add(coord);
+      if (!_isChecked(around)) {
+        _setChecked(coord);
         switch (flag.get(around)) {
           case Cell.flagged:
             break;
