@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:minesweeper/src/core/cell.dart';
-import 'package:minesweeper/src/core/coord.dart';
+import 'package:minesweeper/src/core/models/atoms/cell.dart';
+import 'package:minesweeper/src/core/models/atoms/coord.dart';
 
 class Matrix {
   Matrix(Cell defaultCell, {required Size size})

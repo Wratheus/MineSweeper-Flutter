@@ -1,6 +1,6 @@
-import 'package:minesweeper/models/bomb_map.dart';
-import 'package:minesweeper/models/cell_map.dart';
-import 'package:minesweeper/src/core/difficulty.dart';
+import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
+import 'package:minesweeper/src/core/models/bomb_map.dart';
+import 'package:minesweeper/src/core/models/cell_map.dart';
 
 class GameField {
   GameField({required this.difficulty})

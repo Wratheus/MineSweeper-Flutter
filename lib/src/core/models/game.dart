@@ -1,8 +1,8 @@
-import 'package:minesweeper/models/game_field.dart';
-import 'package:minesweeper/models/game_play.dart';
-import 'package:minesweeper/models/game_state.dart';
-import 'package:minesweeper/src/core/coord.dart';
-import 'package:minesweeper/src/core/difficulty.dart';
+import 'package:minesweeper/src/core/models/atoms/coord.dart';
+import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
+import 'package:minesweeper/src/core/models/game_field.dart';
+import 'package:minesweeper/src/core/models/game_play.dart';
+import 'package:minesweeper/src/core/models/game_state.dart';
 
 class Game {
   Game({required this.difficulty})

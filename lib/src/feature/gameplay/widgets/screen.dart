@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:minesweeper/src/core/models/atoms/coord.dart';
+import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
+import 'package:minesweeper/src/core/models/game.dart';
+import 'package:minesweeper/src/core/models/game_state.dart';
 
-import 'package:minesweeper/models/game_play.dart';
-import 'package:minesweeper/models/game_state.dart';
-import 'package:minesweeper/src/core/coord.dart';
-
-class MinesweeperGameWidget extends StatefulWidget {
-  const MinesweeperGameWidget({required this.gamePlay, super.key});
-
-  final GamePlay gamePlay;
+class MinesweeperGameplayScreen extends StatefulWidget {
+  const MinesweeperGameplayScreen({super.key});
 
   @override
-  State<MinesweeperGameWidget> createState() => _MinesweeperGameWidgetState();
+  State<MinesweeperGameplayScreen> createState() =>
+      _MinesweeperGameplayScreenState();
 }
 
-class _MinesweeperGameWidgetState extends State<MinesweeperGameWidget> {
+class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
+  final Game game = Game(difficulty: Difficulty.beginner)..start();
+
   @override
   Widget build(BuildContext context) {
-    final size = widget.gamePlay.getField().difficulty.size;
-    final int rows = size.width.toInt();
-    final int cols = size.height.toInt();
+    final int cols = game.difficulty.size.width.toInt();
+    final int rows = game.difficulty.size.height.toInt();
 
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +31,7 @@ class _MinesweeperGameWidgetState extends State<MinesweeperGameWidget> {
                 // Сделать рестарт игры
                 // Например, создать новую игру, либо вызвать reset
                 // Пока просто сбросим состояние игры
-                widget.gamePlay.setState(GameState.start);
+                game.gamePlay.setState(GameState.start);
               });
             },
           ),
@@ -39,7 +39,7 @@ class _MinesweeperGameWidgetState extends State<MinesweeperGameWidget> {
       ),
       body: Column(
         children: [
-          Text('State: ${widget.gamePlay.getState()}'),
+          Text('State: ${game.gamePlay.getState()}'),
           Expanded(
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -51,21 +51,21 @@ class _MinesweeperGameWidgetState extends State<MinesweeperGameWidget> {
                 final int y = index ~/ cols;
                 final coord = Coord(x, y);
 
-                final cell = widget.gamePlay.getCell(coord);
+                final cell = game.gamePlay.getCell(coord);
 
                 return GestureDetector(
                   onTap: () {
                     setState(() {
-                      widget.gamePlay.openCell(coord);
-                      widget.gamePlay.checkWin();
+                      game.gamePlay.openCell(coord);
+                      game.gamePlay.checkWin();
                     });
                   },
                   onLongPress: () {
                     setState(() {
-                      if (widget.gamePlay.getState() == GameState.playing) {
-                        widget.gamePlay.getField().flag.setFlaggedToCell(coord);
+                      if (game.gamePlay.getState() == GameState.playing) {
+                        game.gamePlay.getField().flag.setFlaggedToCell(coord);
                       }
-                      widget.gamePlay.checkWin();
+                      game.gamePlay.checkWin();
                     });
                   },
                   child: Image(image: cell.image),
