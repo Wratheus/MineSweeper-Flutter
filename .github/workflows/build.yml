@@ -11,6 +11,7 @@ jobs:
     name: Build for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -42,6 +43,11 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
+        shell: bash
+
+              - name: Precache Flutter macOS artifacts
+        if: matrix.flutter-target == 'macos'
+        run: flutter precache --macos
         shell: bash
 
       - name: Install CocoaPods dependencies
