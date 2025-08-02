@@ -1,25 +1,23 @@
-import 'package:flutter/widgets.dart';
-
 enum Cell {
-  zero(image: AssetImage('assets/img/zero.png')),
-  num1(image: AssetImage('assets/img/num1.png')),
-  num2(image: AssetImage('assets/img/num2.png')),
-  num3(image: AssetImage('assets/img/num3.png')),
-  num4(image: AssetImage('assets/img/num4.png')),
-  num5(image: AssetImage('assets/img/num5.png')),
-  num6(image: AssetImage('assets/img/num6.png')),
-  num7(image: AssetImage('assets/img/num7.png')),
-  num8(image: AssetImage('assets/img/num8.png')),
-  bomb(image: AssetImage('assets/img/bomb.png')),
-  opened(image: AssetImage('assets/img/opened.png')),
-  closed(image: AssetImage('assets/img/closed.png')),
-  flagged(image: AssetImage('assets/img/flagged.png')),
-  bombed(image: AssetImage('assets/img/bombed.png')),
-  nobomb(image: AssetImage('assets/img/nobomb.png'));
+  zero(imagePath: 'assets/img/zero.png'),
+  num1(imagePath: 'assets/img/num1.png'),
+  num2(imagePath: 'assets/img/num2.png'),
+  num3(imagePath: 'assets/img/num3.png'),
+  num4(imagePath: 'assets/img/num4.png'),
+  num5(imagePath: 'assets/img/num5.png'),
+  num6(imagePath: 'assets/img/num6.png'),
+  num7(imagePath: 'assets/img/num7.png'),
+  num8(imagePath: 'assets/img/num8.png'),
+  bomb(imagePath: 'assets/img/bomb.png'),
+  opened(imagePath: 'assets/img/opened.png'),
+  closed(imagePath: 'assets/img/closed.png'),
+  flagged(imagePath: 'assets/img/flagged.png'),
+  bombed(imagePath: 'assets/img/bombed.png'),
+  nobomb(imagePath: 'assets/img/nobomb.png');
 
-  const Cell({required this.image});
+  const Cell({required this.imagePath});
 
-  final AssetImage image;
+  final String imagePath;
 
   /// Возвращает следующий номер
   Cell getNextNum() {

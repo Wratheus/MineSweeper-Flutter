@@ -12,7 +12,7 @@ class MinesweeperGameplayScreen extends StatefulWidget {
 }
 
 class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
-  final Game game = Game(difficulty: Difficulty.beginner);
+  Game game = Game(difficulty: Difficulty.beginner);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,10 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
       appBar: AppBar(
         title: const Text('Minesweeper'),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _onNewGamePress,
+          ),
         ],
       ),
       body: Column(
@@ -43,9 +46,10 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
                 final cell = game.getCell(coord);
 
                 return GestureDetector(
-                  onTap: () => pressedLeftButton(coord),
-                  onLongPress: () => pressedRightButton(coord),
-                  child: Image(image: cell.image),
+                  onTap: () => _onMouseLeft(coord),
+                  onSecondaryTap: () => _onMouseRight(coord),
+                  onLongPress: () => _onMouseRight(coord),
+                  child: Image(image: AssetImage(cell.imagePath)),
                 );
               },
             ),
@@ -55,13 +59,16 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
     );
   }
 
-  void pressedLeftButton(Coord coord) => setState(
+  void _onNewGamePress() =>
+      setState(() => game = Game(difficulty: Difficulty.beginner));
+
+  void _onMouseLeft(Coord coord) => setState(
     () => game
       ..openCell(coord)
       ..checkWin(),
   );
 
-  void pressedRightButton(Coord coord) {
+  void _onMouseRight(Coord coord) {
     setState(() {
       if (game.state == GameState.playing) {
         game.flag.setFlaggedToCell(coord);
