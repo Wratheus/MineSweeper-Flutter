@@ -1,62 +1,72 @@
-import 'package:minesweeper/src/core/models/atoms/cell.dart';
-import 'package:minesweeper/src/core/models/atoms/coord.dart';
-import 'package:minesweeper/src/core/models/atoms/matrix.dart';
+import 'package:minesweeper/src/core/models/cell.dart';
+import 'package:minesweeper/src/core/models/coord.dart';
+import 'package:minesweeper/src/core/models/matrix.dart';
 import 'package:minesweeper/src/core/models/size.dart';
 
+/// Класс для управления верхним уровнем игрового поля.
+/// Этот уровень хранит видимое состояние ячеек:
+/// - закрытые
+/// - открытые
+/// - с флагами
+/// - с отметками после проигрыша (например, `nobomb`)
 class Flags {
-  Flags({required this.size}) : map = Matrix(Cell.closed, size: size) {
-    _countOfClosedCells = size.squareSize;
-    _countOfFlaggedCells = 0;
-  }
+  /// Создаёт карту флагов с начальными значениями [Cell.closed].
+  Flags({required this.size}) : map = Matrix(Cell.closed, size: size);
 
+  /// Матрица, представляющая текущее состояние верхнего уровня.
   final Matrix map;
+
+  /// Размер игрового поля.
   final BoardSize size;
 
-  int _countOfClosedCells = 0;
-  int _countOfFlaggedCells = 0;
+  /// Возвращает состояние клетки по координате [coord].
+  Cell? get(Coord coord) => map.cellByCoord(coord);
 
-  Cell? get(Coord coord) => map.getCell(coord);
+  /// Открывает клетку (меняет её состояние на [Cell.opened]).
+  void openCell(Coord coord) => map.setCellByCoord(coord, Cell.opened);
 
-  void setOpenedToCell(Coord coord) {
-    map.setCell(coord, Cell.opened);
-    _countOfClosedCells--;
-  }
-
-  void setFlaggedToCell(Coord coord) {
-    final current = map.getCell(coord);
+  /// Переключает состояние флага:
+  /// - Если клетка помечена флагом → делает её закрытой.
+  /// - Если клетка закрыта → ставит флаг.
+  void toggleFlag(Coord coord) {
+    final Cell? current = map.cellByCoord(coord);
     if (current == Cell.flagged) {
-      map.setCell(coord, Cell.closed);
-      _countOfFlaggedCells--;
+      map.setCellByCoord(coord, Cell.closed);
     } else if (current == Cell.closed) {
-      map.setCell(coord, Cell.flagged);
-      _countOfFlaggedCells++;
+      map.setCellByCoord(coord, Cell.flagged);
     }
   }
 
-  void setBombedToCell(Coord coord) {
-    map.setCell(coord, Cell.bombed);
-  }
-
-  void setNoBombToFlaggedCell(Coord coord) {
-    if (map.getCell(coord) == Cell.flagged) {
-      map.setCell(coord, Cell.nobomb);
+  /// Отмечает клетку как "здесь не было бомбы" ([Cell.nobomb]),
+  /// если игрок ошибочно поставил флаг.
+  /// Используется при проигрыше.
+  void markNoBomb(Coord coord) {
+    if (map.cellByCoord(coord) == Cell.flagged) {
+      map.setCellByCoord(coord, Cell.nobomb);
     }
   }
 
-  void setOpenedToClosedBombCell(Coord coord) {
-    if (map.getCell(coord) == Cell.closed) {
-      map.setCell(coord, Cell.opened);
+  /// Помечает клетку как подорванную бомбу ([Cell.bombed]).
+  /// Используется для выделения той мины, на которую кликнул игрок.
+  void detonateBomb(Coord coord) {
+    map.setCellByCoord(coord, Cell.bombed);
+  }
+
+  /// Показывает мину на поле, если она была закрыта.
+  /// (Меняет состояние на [Cell.opened]).
+  /// Вызывается при проигрыше для раскрытия всех мин.
+  void revealBomb(Coord coord) {
+    if (map.cellByCoord(coord) == Cell.closed) {
+      map.setCellByCoord(coord, Cell.opened);
     }
   }
 
-  int getCountOfClosedCells() => _countOfClosedCells;
-
-  int getTotalFlags() => _countOfFlaggedCells;
-
-  int getCountOfFlaggedCellsAround(Coord coord) {
+  /// Считает количество флагов вокруг указанной клетки.
+  /// Используется для chording (автооткрытия соседних клеток).
+  int countFlagCellsAround(Coord coord) {
     int count = 0;
     coord.forEachNeighbor(size, (around) {
-      if (map.getCell(around) == Cell.flagged) {
+      if (map.cellByCoord(around) == Cell.flagged) {
         count++;
       }
     });

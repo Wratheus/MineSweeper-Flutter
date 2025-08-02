@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:minesweeper/src/core/models/atoms/coord.dart';
-import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
+import 'package:minesweeper/src/core/models/coord.dart';
+import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
 
 class MinesweeperGameplayScreen extends StatefulWidget {
@@ -71,7 +71,7 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   void _onMouseRight(Coord coord) {
     setState(() {
       if (game.state == GameState.playing) {
-        game.flag.setFlaggedToCell(coord);
+        game.flag.toggleFlag(coord);
         game.checkWin();
       }
     });

@@ -1,29 +1,49 @@
-import 'package:minesweeper/src/core/models/atoms/cell.dart';
-import 'package:minesweeper/src/core/models/atoms/coord.dart';
-import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
-import 'package:minesweeper/src/core/models/bomb_map.dart';
+import 'package:minesweeper/src/core/models/bombs.dart';
+import 'package:minesweeper/src/core/models/cell.dart';
+import 'package:minesweeper/src/core/models/coord.dart';
+import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/flags.dart';
 
+/// Состояние игры.
+/// [start] — до первого хода,
+/// [playing] — игра идет,
+/// [lose] — игрок проиграл,
+/// [win] — игрок выиграл.
 enum GameState { start, playing, lose, win }
 
+/// Основной класс, реализующий логику игры "Сапёр".
 class Game {
+  /// Создаёт новую игру с указанным уровнем сложности [difficulty].
   Game({required this.difficulty})
     : bomb = Bombs(bombsCount: difficulty.mines, size: difficulty.size),
       flag = Flags(size: difficulty.size),
       _checked = List.filled(difficulty.size.squareSize, false);
 
+  /// Карта бомб (нижний уровень — где находятся мины).
   final Bombs bomb;
+
+  /// Карта флагов (верхний уровень — видимое состояние клеток).
   final Flags flag;
+
+  /// Уровень сложности игры (размер поля + количество мин).
   final Difficulty difficulty;
+
+  /// Список для отметки уже проверенных клеток (true — клетка открыта).
   final List<bool> _checked;
 
+  /// Текущее состояние игры.
   GameState state = GameState.start;
 
+  /// Проверяет, открыта ли клетка по координате [c].
   bool _isChecked(Coord c) => _checked[c.x + c.y * difficulty.size.width];
 
+  /// Помечает клетку [c] как открытую.
   void _setChecked(Coord c) =>
       _checked[c.x + c.y * difficulty.size.width] = true;
 
+  /// Возвращает текущее состояние клетки:
+  /// - Если клетка открыта, возвращаем значение из карты бомб.
+  /// - Иначе возвращаем состояние из карты флагов.
   Cell getCell(Coord coord) {
     final Cell? cellByCoord = flag.get(coord);
     if (cellByCoord == null) {
@@ -37,22 +57,26 @@ class Game {
     }
   }
 
+  /// Рекурсивно раскрывает соседние клетки вокруг [coord],
+  /// если текущая клетка — ноль (нет мин рядом).
   void _revealAround(Coord coord) {
     coord.forEachNeighbor(difficulty.size, (around) {
       if (!_isChecked(around)) {
         _setChecked(around);
         switch (flag.get(around)) {
           case Cell.flagged:
+            // Пропускаем, если клетка помечена флагом.
             break;
           case Cell.closed:
             switch (bomb.cellByCoord(around)) {
               case Cell.bomb:
+                // Не открываем мины при автоматическом раскрытии.
                 break;
               case Cell.zero:
-                flag.setOpenedToCell(around);
-                _revealAround(around);
+                flag.openCell(around);
+                _revealAround(around); // Рекурсия для пустых клеток.
               default:
-                flag.setOpenedToCell(around);
+                flag.openCell(around);
             }
           default:
             break;
@@ -61,27 +85,33 @@ class Game {
     });
   }
 
+  /// Открывает клетку по клику.
+  /// - На первом ходе меняет состояние игры на [GameState.playing].
+  /// - Если клетка уже открыта, проверяет chording.
+  /// - Если мина — проигрыш.
+  /// - Если пустая клетка (0), раскрываем соседние.
   void openCell(Coord coord) {
     switch (state) {
       case GameState.start:
+        // Первый ход: если не мина, открываем.
         if (bomb.cellByCoord(coord) != Cell.bomb) {
-          flag.setOpenedToCell(coord);
+          flag.openCell(coord);
         }
         _revealAround(coord);
         state = GameState.playing;
       case GameState.playing:
         if (flag.get(coord) == Cell.opened) {
-          _setOpenedToClosedBombCellsAround(coord);
+          _chordIfFlagsMatch(coord);
         }
         if (flag.get(coord) == Cell.closed) {
           switch (bomb.cellByCoord(coord)) {
             case Cell.bomb:
               lose(coord);
             case Cell.zero:
-              flag.setOpenedToCell(coord);
+              flag.openCell(coord);
               _revealAround(coord);
             default:
-              flag.setOpenedToCell(coord);
+              flag.openCell(coord);
           }
         }
       default:
@@ -89,10 +119,11 @@ class Game {
     }
   }
 
-  void _setOpenedToClosedBombCellsAround(Coord coord) {
+  /// Chording: автоматическое открытие соседних клеток,
+  /// если число флагов вокруг равно числу на клетке.
+  void _chordIfFlagsMatch(Coord coord) {
     if (bomb.cellByCoord(coord) != Cell.bomb) {
-      if (flag.getCountOfFlaggedCellsAround(coord) ==
-          bomb.cellByCoord(coord)!.number) {
+      if (flag.countFlagCellsAround(coord) == bomb.cellByCoord(coord)!.index) {
         coord.forEachNeighbor(difficulty.size, (around) {
           if (flag.get(around) == Cell.closed) {
             openCell(around);
@@ -102,28 +133,41 @@ class Game {
     }
   }
 
+  /// Обрабатывает проигрыш:
+  /// - Все мины показываются.
+  /// - Ошибочные флаги помечаются как "нет мины".
+  /// - Кликнутая мина помечается как взорванная.
   void lose(Coord bombClicked) {
     state = GameState.lose;
     for (int x = 0; x < difficulty.size.width; x++) {
       for (int y = 0; y < difficulty.size.height; y++) {
-        final coord = Coord(x, y);
+        final Coord coord = Coord(x, y);
         if (bomb.cellByCoord(coord) == Cell.bomb) {
-          flag.setOpenedToClosedBombCell(coord);
+          flag.revealBomb(coord);
         } else {
-          flag.setNoBombToFlaggedCell(coord);
+          flag.markNoBomb(coord);
         }
       }
     }
-    flag.setBombedToCell(bombClicked);
+    flag.detonateBomb(bombClicked);
   }
 
+  /// Проверяет победу:
+  /// Если количество открытых клеток равно количеству мин, ставим [GameState.win].
   void checkWin() {
     if (state == GameState.playing) {
-      if (flag.getCountOfClosedCells() == bomb.bombsCount) {
+      int countChecked = 0;
+      for (final bool isChecked in _checked) {
+        if (isChecked) {
+          countChecked++;
+        }
+      }
+      if (countChecked == bomb.bombsCount) {
         state = GameState.win;
       }
     }
   }
 
+  /// Возвращает текущее состояние игры.
   GameState getState() => state;
 }
