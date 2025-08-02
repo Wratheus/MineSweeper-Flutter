@@ -3,8 +3,8 @@ name: Build Flutter Minesweeper
 on:
   push:
     tags:
-      - 'v*'  # Запуск при пуше тега вида v1.0.0
-  workflow_dispatch: # Возможность запустить вручную
+      - 'v*' # Запуск при пуше тега вида v1.0.0
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,11 +12,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        include:
+          - os: windows-latest
+            flutter-target: windows
+            artifact-ext: zip
+          - os: ubuntu-latest
+            flutter-target: linux
+            artifact-ext: tar.gz
+          - os: macos-latest
+            flutter-target: macos
+            artifact-ext: tar.gz
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -24,42 +33,56 @@ jobs:
           flutter-version: 'stable'
 
       - name: Enable desktop
-        run: flutter config --enable-${{ matrix.os == 'windows-latest' && 'windows' || (matrix.os == 'ubuntu-latest' && 'linux' || 'macos') }}-desktop
+        run: flutter config --enable-${{ matrix.flutter-target }}-desktop
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build app
+      - name: Install Linux dependencies
+        if: matrix.flutter-target == 'linux'
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+      - name: Build app
+        shell: bash
+        run: |
+          if [[ "${{ matrix.flutter-target }}" == "windows" ]]; then
             flutter build windows --release
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            sudo apt-get update && sudo apt-get install -y libgtk-3-dev
+          elif [[ "${{ matrix.flutter-target }}" == "linux" ]]; then
             flutter build linux --release
           else
             flutter build macos --release
           fi
 
-      - name: Archive build
+      - name: Create artifacts directory
+        run: mkdir artifacts
+
+      - name: Archive build (Windows)
+        if: matrix.flutter-target == 'windows'
+        shell: pwsh
         run: |
-          mkdir artifacts
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a artifacts/minesweeper-windows.zip build/windows/x64/runner/Release/*
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            tar -czvf artifacts/minesweeper-linux.tar.gz -C build/linux/x64/release/bundle .
-          else
-            tar -czvf artifacts/minesweeper-macos.tar.gz -C build/macos/Build/Products/Release Minesweeper.app
-          fi
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath artifacts/minesweeper-windows.zip
+
+      - name: Archive build (Linux)
+        if: matrix.flutter-target == 'linux'
+        run: |
+          tar -czvf artifacts/minesweeper-linux.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Archive build (macOS)
+        if: matrix.flutter-target == 'macos'
+        run: |
+          tar -czvf artifacts/minesweeper-macos.tar.gz -C build/macos/Build/Products/Release Minesweeper.app
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-build
           path: artifacts/*
 
       - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
           files: artifacts/*
         env:
