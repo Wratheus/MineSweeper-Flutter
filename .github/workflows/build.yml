@@ -3,7 +3,7 @@ name: Build Flutter Minesweeper
 on:
   push:
     tags:
-      - 'v*' # Запуск при пуше тега (v1.0.0)
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -15,24 +15,21 @@ jobs:
         include:
           - os: windows-latest
             flutter-target: windows
-            artifact-ext: zip
           - os: ubuntu-latest
             flutter-target: linux
-            artifact-ext: tar.gz
           - os: macos-latest
             flutter-target: macos
-            artifact-ext: tar.gz
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.4' # фиксированная стабильная версия
-          channel: 'stable'
-          cache: true
+      # ✅ Ставим Flutter вручную (без багового экшена)
+      - name: Install Flutter
+        run: |
+          git clone https://github.com/flutter/flutter.git --branch 3.24.4 --depth 1
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+        shell: bash
 
       - name: Enable desktop
         run: flutter config --enable-${{ matrix.flutter-target }}-desktop
@@ -88,7 +85,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/*
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
