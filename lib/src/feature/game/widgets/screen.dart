@@ -4,6 +4,7 @@ import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
+import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
 
 class MinesweeperGameplayScreen extends StatefulWidget {
   const MinesweeperGameplayScreen({super.key});
@@ -52,17 +53,15 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   }
 
   void _onLeftClick(Coord coord) {
-    if (game.getState() == GameState.playing ||
-        game.getState() == GameState.start) {
-      if (game.getState() == GameState.start) {
+    if (game.state == GameState.playing || game.state == GameState.start) {
+      if (game.state == GameState.start) {
         stopwatch
           ..reset()
           ..start();
       }
       setState(() {
         game.openCell(coord);
-        if (game.getState() == GameState.win ||
-            game.getState() == GameState.lose) {
+        if (game.state == GameState.win || game.state == GameState.lose) {
           stopwatch.stop();
         }
       });
@@ -70,7 +69,7 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   }
 
   void _onRightClick(Coord coord) {
-    if (game.getState() == GameState.playing) {
+    if (game.state == GameState.playing) {
       setState(() => game.flag.toggleFlag(coord));
     }
   }
@@ -87,104 +86,67 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
           IconButton(icon: const Icon(Icons.refresh), onPressed: _startNewGame),
         ],
       ),
-      body: Column(
-        children: [
-          _buildStatusPanel(),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double maxWidth = constraints.maxWidth - 16;
-                final double cellSize = (maxWidth / cols).clamp(16.0, 40.0);
-
-                return Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 8),
-                      ],
-                    ),
-                    child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: cols,
-                        mainAxisSpacing: 2,
-                        crossAxisSpacing: 2,
-                      ),
-                      itemCount: rows * cols,
-                      itemBuilder: (context, index) {
-                        final int x = index % cols;
-                        final int y = index ~/ cols;
-                        final Coord coord = Coord(x, y);
-                        final Cell cell = game.getCell(coord);
-
-                        return GestureDetector(
-                          onTap: () => _onLeftClick(coord),
-                          onLongPress: () => _onRightClick(coord),
-                          onSecondaryTap: () => _onRightClick(coord),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: cellSize,
-                            height: cellSize,
-                            decoration: BoxDecoration(
-                              color: _getCellBackgroundColor(cell),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.grey.shade400),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Image.asset(
-                                cell.imagePath,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+      body: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  StatusItem(
+                    icon: Icons.flag,
+                    text: '${game.countFlags} / ${game.difficulty.mines}',
                   ),
-                );
-              },
+                  StatusItem(icon: Icons.timer, text: '${secondsElapsed}s'),
+                  StatusItem(
+                    icon: Icons.info,
+                    text: game.state.name.toUpperCase(),
+                    color: _getStateColor(game.state),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Flexible(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: cols,
+                  mainAxisSpacing: 1,
+                  crossAxisSpacing: 1,
+                ),
+                itemCount: rows * cols,
+                itemBuilder: (context, index) {
+                  final int x = index % cols;
+                  final int y = index ~/ cols;
+                  final Coord coord = Coord(x, y);
+                  final Cell cell = game.getCell(coord);
+
+                  return GestureDetector(
+                    onTap: () => _onLeftClick(coord),
+                    onLongPress: () => _onRightClick(coord),
+                    onSecondaryTap: () => _onRightClick(coord),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      decoration: BoxDecoration(
+                        color: _getCellBackgroundColor(cell),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey.shade400),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.5),
+                        child: Image.asset(cell.imagePath, fit: BoxFit.contain),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  Widget _buildStatusPanel() => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _statusItem(Icons.flag, '${_countFlags()} / ${game.difficulty.mines}'),
-        _statusItem(Icons.timer, '${secondsElapsed}s'),
-        _statusItem(
-          Icons.info,
-          game.getState().name.toUpperCase(),
-          color: _getStateColor(game.getState()),
-        ),
-      ],
-    ),
-  );
-
-  Widget _statusItem(IconData icon, String text, {Color? color}) => Row(
-    children: [
-      Icon(icon, color: color ?? Theme.of(context).colorScheme.primary),
-      const SizedBox(width: 6),
-      Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: color ?? Colors.black87,
-        ),
-      ),
-    ],
-  );
 
   Widget _buildDifficultySelector() => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -236,18 +198,5 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
       default:
         return Colors.grey.shade300;
     }
-  }
-
-  int _countFlags() {
-    int count = 0;
-    for (int x = 0; x < game.difficulty.size.width; x++) {
-      for (int y = 0; y < game.difficulty.size.height; y++) {
-        final Coord coord = Coord(x, y);
-        if (game.flag.get(coord) == Cell.flagged) {
-          count++;
-        }
-      }
-    }
-    return count;
   }
 }

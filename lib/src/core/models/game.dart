@@ -32,7 +32,7 @@ class Game {
   final List<bool> _checked;
 
   /// Текущее состояние игры.
-  GameState state = GameState.start;
+  GameState _state = GameState.start;
 
   /// Проверяет, открыта ли клетка по координате [c].
   bool _isChecked(Coord c) => _checked[c.x + c.y * difficulty.size.width];
@@ -57,32 +57,28 @@ class Game {
     }
   }
 
-  /// Рекурсивно раскрывает соседние клетки вокруг [coord],
+  /// Рекурсивно раскрывает соседние клетки вокруг [start],
   /// если текущая клетка — ноль (нет мин рядом).
-  void _revealAround(Coord coord) {
-    coord.forEachNeighbor(difficulty.size, (around) {
-      if (!_isChecked(around)) {
-        _setChecked(around);
-        switch (flag.get(around)) {
-          case Cell.flagged:
-            // Пропускаем, если клетка помечена флагом.
-            break;
-          case Cell.closed:
-            switch (bomb.cellByCoord(around)) {
-              case Cell.bomb:
-                // Не открываем мины при автоматическом раскрытии.
-                break;
-              case Cell.zero:
-                flag.openCell(around);
-                _revealAround(around); // Рекурсия для пустых клеток.
-              default:
-                flag.openCell(around);
+  void _revealAround(Coord start) {
+    final queue = <Coord>[start];
+    _setChecked(start);
+
+    while (queue.isNotEmpty) {
+      queue.removeAt(0).forEachNeighbor(difficulty.size, (neighbor) {
+        if (!_isChecked(neighbor) && flag.get(neighbor) != Cell.flagged) {
+          _setChecked(neighbor);
+
+          final Cell bombCell = bomb.cellByCoord(neighbor)!;
+          if (bombCell != Cell.bomb) {
+            flag.openCell(neighbor);
+
+            if (bombCell == Cell.zero) {
+              queue.add(neighbor);
             }
-          default:
-            break;
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /// Открывает клетку по клику.
@@ -98,7 +94,7 @@ class Game {
           _setChecked(coord);
         }
         _revealAround(coord);
-        state = GameState.playing;
+        _state = GameState.playing;
       case GameState.playing:
         if (flag.get(coord) == Cell.opened) {
           _chordIfFlagsMatch(coord);
@@ -106,7 +102,7 @@ class Game {
         if (flag.get(coord) == Cell.closed) {
           switch (bomb.cellByCoord(coord)) {
             case Cell.bomb:
-              lose(coord);
+              _lose(coord);
             case Cell.zero:
               flag.openCell(coord);
               _setChecked(coord);
@@ -119,7 +115,7 @@ class Game {
       default:
         break;
     }
-    checkWin();
+    _checkWin();
   }
 
   /// Chording: автоматическое открытие соседних клеток,
@@ -140,8 +136,8 @@ class Game {
   /// - Все мины показываются.
   /// - Ошибочные флаги помечаются как "нет мины".
   /// - Кликнутая мина помечается как взорванная.
-  void lose(Coord bombClicked) {
-    state = GameState.lose;
+  void _lose(Coord bombClicked) {
+    _state = GameState.lose;
     for (int x = 0; x < difficulty.size.width; x++) {
       for (int y = 0; y < difficulty.size.height; y++) {
         final Coord coord = Coord(x, y);
@@ -157,12 +153,16 @@ class Game {
 
   /// Проверяет победу:
   /// Если количество открытых клеток равно количеству мин, ставим [GameState.win].
-  void checkWin() {
+  void _checkWin() {
     if (state == GameState.playing) {
       int openedCells = 0;
-      for (final bool isChecked in _checked) {
-        if (isChecked) {
-          openedCells++;
+
+      for (int x = 0; x < difficulty.size.width; x++) {
+        for (int y = 0; y < difficulty.size.height; y++) {
+          final Coord coord = Coord(x, y);
+          if (flag.get(coord) == Cell.opened) {
+            openedCells++;
+          }
         }
       }
 
@@ -170,11 +170,25 @@ class Game {
       final int nonBombCells = totalCells - bomb.bombsCount;
 
       if (openedCells == nonBombCells) {
-        state = GameState.win;
+        _state = GameState.win;
       }
     }
   }
 
+  /// Посчитать количество флагов на карте.
+  int get countFlags {
+    int count = 0;
+    for (int x = 0; x < difficulty.size.width; x++) {
+      for (int y = 0; y < difficulty.size.height; y++) {
+        final Coord coord = Coord(x, y);
+        if (flag.get(coord) == Cell.flagged) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
   /// Возвращает текущее состояние игры.
-  GameState getState() => state;
+  GameState get state => _state;
 }
