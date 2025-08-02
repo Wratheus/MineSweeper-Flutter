@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
@@ -15,23 +16,56 @@ class MinesweeperGameplayScreen extends StatefulWidget {
 class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
   late Game game;
   Difficulty selectedDifficulty = Difficulty.beginner;
+  int secondsElapsed = 0;
+  late final Stopwatch stopwatch;
+  late final Ticker ticker;
 
   @override
   void initState() {
     super.initState();
     game = Game(difficulty: selectedDifficulty);
+    stopwatch = Stopwatch();
+    ticker = Ticker((_) {
+      if (stopwatch.isRunning) {
+        setState(() {
+          secondsElapsed = stopwatch.elapsed.inSeconds;
+        });
+      }
+    });
+    ticker.start();
+  }
+
+  @override
+  void dispose() {
+    ticker.dispose();
+    super.dispose();
   }
 
   void _startNewGame() {
     setState(() {
       game = Game(difficulty: selectedDifficulty);
+      stopwatch
+        ..reset()
+        ..start();
+      secondsElapsed = 0;
     });
   }
 
   void _onLeftClick(Coord coord) {
     if (game.getState() == GameState.playing ||
         game.getState() == GameState.start) {
-      setState(() => game.openCell(coord));
+      if (game.getState() == GameState.start) {
+        stopwatch
+          ..reset()
+          ..start();
+      }
+      setState(() {
+        game.openCell(coord);
+        if (game.getState() == GameState.win ||
+            game.getState() == GameState.lose) {
+          stopwatch.stop();
+        }
+      });
     }
   }
 
@@ -48,104 +82,75 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Minesweeper'),
+        title: const Text(
+          'Minesweeper',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: DropdownButton<Difficulty>(
-              value: selectedDifficulty,
-              underline: Container(),
-              dropdownColor: Colors.blue,
-              iconEnabledColor: Colors.white,
-              items: Difficulty.values
-                  .map(
-                    (d) => DropdownMenuItem<Difficulty>(
-                      value: d,
-                      child: Text(
-                        '${d.name[0].toUpperCase()}${d.name.substring(1)} (${d.size.width}x${d.size.height}, mines: ${d.mines})',
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (difficulty) {
-                if (difficulty != null) {
-                  setState(() {
-                    selectedDifficulty = difficulty;
-                    _startNewGame();
-                  });
-                }
-              },
-            ),
-          ),
+          _buildDifficultySelector(),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _startNewGame),
         ],
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              game.getState().name.toUpperCase(),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: _getStateColor(game.getState()),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Text('Flags: ${_countFlags()} / ${game.difficulty.mines}'),
-          ),
+          _buildStatusPanel(),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Размер доступного пространства
-                final double maxWidth = constraints.maxWidth - 16; // с padding
-                final maxHeight = constraints.maxHeight - 16;
+                final double maxWidth = constraints.maxWidth - 16;
+                final double cellSize = (maxWidth / cols).clamp(16.0, 40.0);
 
-                // Размер ячейки по ширине и высоте
-                final double cellWidth = maxWidth / cols;
-                final double cellHeight = maxHeight / rows;
-
-                // Выбираем минимальный размер, чтобы сетка умещалась по обеим осям
-                final cellSize = cellWidth < cellHeight
-                    ? cellWidth
-                    : cellHeight;
-
-                // Ограничение по минимальному и максимальному размеру ячейки
-                final double clampedCellSize = cellSize.clamp(16.0, 40.0);
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(8),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: cols,
-                    mainAxisSpacing: 2,
-                    crossAxisSpacing: 2,
-                  ),
-                  itemCount: rows * cols,
-                  itemBuilder: (context, index) {
-                    final int x = index % cols;
-                    final int y = index ~/ cols;
-                    final Coord coord = Coord(x, y);
-                    final Cell cell = game.getCell(coord);
-
-                    return GestureDetector(
-                      onTap: () => _onLeftClick(coord),
-                      onLongPress: () => _onRightClick(coord),
-                      onSecondaryTap: () => _onRightClick(coord),
-                      child: Container(
-                        width: clampedCellSize,
-                        height: clampedCellSize,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade400),
-                          color: _getCellBackgroundColor(cell),
-                        ),
-                        child: Image.asset(cell.imagePath, fit: BoxFit.contain),
+                return Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 8),
+                      ],
+                    ),
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        mainAxisSpacing: 2,
+                        crossAxisSpacing: 2,
                       ),
-                    );
-                  },
+                      itemCount: rows * cols,
+                      itemBuilder: (context, index) {
+                        final int x = index % cols;
+                        final int y = index ~/ cols;
+                        final Coord coord = Coord(x, y);
+                        final Cell cell = game.getCell(coord);
+
+                        return GestureDetector(
+                          onTap: () => _onLeftClick(coord),
+                          onLongPress: () => _onRightClick(coord),
+                          onSecondaryTap: () => _onRightClick(coord),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: cellSize,
+                            height: cellSize,
+                            decoration: BoxDecoration(
+                              color: _getCellBackgroundColor(cell),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.grey.shade400),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Image.asset(
+                                cell.imagePath,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 );
               },
             ),
@@ -154,6 +159,62 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
       ),
     );
   }
+
+  Widget _buildStatusPanel() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _statusItem(Icons.flag, '${_countFlags()} / ${game.difficulty.mines}'),
+        _statusItem(Icons.timer, '${secondsElapsed}s'),
+        _statusItem(
+          Icons.info,
+          game.getState().name.toUpperCase(),
+          color: _getStateColor(game.getState()),
+        ),
+      ],
+    ),
+  );
+
+  Widget _statusItem(IconData icon, String text, {Color? color}) => Row(
+    children: [
+      Icon(icon, color: color ?? Theme.of(context).colorScheme.primary),
+      const SizedBox(width: 6),
+      Text(
+        text,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: color ?? Colors.black87,
+        ),
+      ),
+    ],
+  );
+
+  Widget _buildDifficultySelector() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: DropdownButton<Difficulty>(
+      value: selectedDifficulty,
+      underline: Container(),
+      items: Difficulty.values
+          .map(
+            (d) => DropdownMenuItem<Difficulty>(
+              value: d,
+              child: Text(
+                '${d.name[0].toUpperCase()}${d.name.substring(1)} (${d.size.width}x${d.size.height})',
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (difficulty) {
+        if (difficulty != null) {
+          setState(() {
+            selectedDifficulty = difficulty;
+            _startNewGame();
+          });
+        }
+      },
+    ),
+  );
 
   Color _getStateColor(GameState state) {
     switch (state) {

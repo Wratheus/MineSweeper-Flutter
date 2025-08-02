@@ -7,8 +7,11 @@ class AppMain extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Minesweeper',
+    debugShowCheckedModeBanner: false,
     theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      useMaterial3: true,
+      colorSchemeSeed: Colors.blue,
+      brightness: Brightness.light,
     ),
     home: const MineSweeperGamePlayMain(),
   );
