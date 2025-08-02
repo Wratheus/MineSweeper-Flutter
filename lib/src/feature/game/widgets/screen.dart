@@ -82,10 +82,6 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Minesweeper',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
         actions: [
           _buildDifficultySelector(),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _startNewGame),
