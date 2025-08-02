@@ -3,7 +3,7 @@ name: Build Flutter Minesweeper
 on:
   push:
     tags:
-      - 'v*' # Запуск при пуше тега вида v1.0.0
+      - 'v*' # Запуск при пуше тега (v1.0.0)
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,9 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.24.4' # фиксированная стабильная версия
+          channel: 'stable'
+          cache: true
 
       - name: Enable desktop
         run: flutter config --enable-${{ matrix.flutter-target }}-desktop
@@ -62,17 +64,18 @@ jobs:
         if: matrix.flutter-target == 'windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath artifacts/minesweeper-windows.zip
+          $tag = "${{ github.ref_name }}"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath artifacts/minesweeper-windows-$tag.zip
 
       - name: Archive build (Linux)
         if: matrix.flutter-target == 'linux'
         run: |
-          tar -czvf artifacts/minesweeper-linux.tar.gz -C build/linux/x64/release/bundle .
+          tar -czvf artifacts/minesweeper-linux-${{ github.ref_name }}.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Archive build (macOS)
         if: matrix.flutter-target == 'macos'
         run: |
-          tar -czvf artifacts/minesweeper-macos.tar.gz -C build/macos/Build/Products/Release Minesweeper.app
+          tar -czvf artifacts/minesweeper-macos-${{ github.ref_name }}.tar.gz -C build/macos/Build/Products/Release Minesweeper.app
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -85,5 +88,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/*
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
