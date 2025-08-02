@@ -130,7 +130,6 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
                       duration: const Duration(milliseconds: 150),
                       decoration: BoxDecoration(
                         color: _getCellBackgroundColor(cell),
-                        borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: Colors.grey.shade400),
                       ),
                       child: Padding(
