@@ -2,18 +2,18 @@ import 'package:minesweeper/src/core/models/atoms/cell.dart';
 import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
 import 'package:minesweeper/src/core/models/bomb_map.dart';
-import 'package:minesweeper/src/core/models/cell_map.dart';
+import 'package:minesweeper/src/core/models/flags.dart';
 
 enum GameState { start, playing, lose, win }
 
 class Game {
   Game({required this.difficulty})
-    : bomb = BombMap(bombsCount: difficulty.mines, size: difficulty.size),
-      flag = FlagMap(size: difficulty.size),
+    : bomb = Bombs(bombsCount: difficulty.mines, size: difficulty.size),
+      flag = Flags(size: difficulty.size),
       _checked = List.filled(difficulty.size.squareSize, false);
 
-  final BombMap bomb;
-  final FlagMap flag;
+  final Bombs bomb;
+  final Flags flag;
   final Difficulty difficulty;
   final List<bool> _checked;
 
@@ -38,9 +38,9 @@ class Game {
   }
 
   void _revealAround(Coord coord) {
-    for (final Coord around in coord.getCoordsAround(difficulty.size)) {
+    coord.forEachNeighbor(difficulty.size, (around) {
       if (!_isChecked(around)) {
-        _setChecked(coord);
+        _setChecked(around);
         switch (flag.get(around)) {
           case Cell.flagged:
             break;
@@ -58,7 +58,7 @@ class Game {
             break;
         }
       }
-    }
+    });
   }
 
   void openCell(Coord coord) {
@@ -93,25 +93,25 @@ class Game {
     if (bomb.cellByCoord(coord) != Cell.bomb) {
       if (flag.getCountOfFlaggedCellsAround(coord) ==
           bomb.cellByCoord(coord)!.number) {
-        for (final around in coord.getCoordsAround(difficulty.size)) {
+        coord.forEachNeighbor(difficulty.size, (around) {
           if (flag.get(around) == Cell.closed) {
             openCell(around);
           }
-        }
+        });
       }
     }
   }
 
   void lose(Coord bombClicked) {
     state = GameState.lose;
-    for (final coord in Coord(
-      difficulty.size.width,
-      difficulty.size.height,
-    ).getCoordsAround(difficulty.size)) {
-      if (bomb.cellByCoord(coord) == Cell.bomb) {
-        flag.setOpenedToClosedBombCell(coord);
-      } else {
-        flag.setNoBombToFlaggedCell(coord);
+    for (int x = 0; x < difficulty.size.width; x++) {
+      for (int y = 0; y < difficulty.size.height; y++) {
+        final coord = Coord(x, y);
+        if (bomb.cellByCoord(coord) == Cell.bomb) {
+          flag.setOpenedToClosedBombCell(coord);
+        } else {
+          flag.setNoBombToFlaggedCell(coord);
+        }
       }
     }
     flag.setBombedToCell(bombClicked);

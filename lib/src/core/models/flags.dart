@@ -3,49 +3,49 @@ import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/matrix.dart';
 import 'package:minesweeper/src/core/models/size.dart';
 
-class FlagMap {
-  FlagMap({required this.size}) : flagMap = Matrix(Cell.closed, size: size) {
+class Flags {
+  Flags({required this.size}) : map = Matrix(Cell.closed, size: size) {
     _countOfClosedCells = size.squareSize;
     _countOfFlaggedCells = 0;
   }
 
-  final Matrix flagMap;
+  final Matrix map;
   final BoardSize size;
 
   int _countOfClosedCells = 0;
   int _countOfFlaggedCells = 0;
 
-  Cell? get(Coord coord) => flagMap.getCell(coord);
+  Cell? get(Coord coord) => map.getCell(coord);
 
   void setOpenedToCell(Coord coord) {
-    flagMap.setCell(coord, Cell.opened);
+    map.setCell(coord, Cell.opened);
     _countOfClosedCells--;
   }
 
   void setFlaggedToCell(Coord coord) {
-    final current = flagMap.getCell(coord);
+    final current = map.getCell(coord);
     if (current == Cell.flagged) {
-      flagMap.setCell(coord, Cell.closed);
+      map.setCell(coord, Cell.closed);
       _countOfFlaggedCells--;
     } else if (current == Cell.closed) {
-      flagMap.setCell(coord, Cell.flagged);
+      map.setCell(coord, Cell.flagged);
       _countOfFlaggedCells++;
     }
   }
 
   void setBombedToCell(Coord coord) {
-    flagMap.setCell(coord, Cell.bombed);
+    map.setCell(coord, Cell.bombed);
   }
 
   void setNoBombToFlaggedCell(Coord coord) {
-    if (flagMap.getCell(coord) == Cell.flagged) {
-      flagMap.setCell(coord, Cell.nobomb);
+    if (map.getCell(coord) == Cell.flagged) {
+      map.setCell(coord, Cell.nobomb);
     }
   }
 
   void setOpenedToClosedBombCell(Coord coord) {
-    if (flagMap.getCell(coord) == Cell.closed) {
-      flagMap.setCell(coord, Cell.opened);
+    if (map.getCell(coord) == Cell.closed) {
+      map.setCell(coord, Cell.opened);
     }
   }
 
@@ -55,11 +55,11 @@ class FlagMap {
 
   int getCountOfFlaggedCellsAround(Coord coord) {
     int count = 0;
-    for (final around in coord.getCoordsAround(size)) {
-      if (flagMap.getCell(around) == Cell.flagged) {
+    coord.forEachNeighbor(size, (around) {
+      if (map.getCell(around) == Cell.flagged) {
         count++;
       }
-    }
+    });
     return count;
   }
 }

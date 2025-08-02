@@ -1,4 +1,3 @@
-
 import 'package:minesweeper/src/core/models/size.dart';
 
 enum Difficulty {

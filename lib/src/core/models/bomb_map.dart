@@ -5,8 +5,8 @@ import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/matrix.dart';
 import 'package:minesweeper/src/core/models/size.dart';
 
-class BombMap {
-  BombMap({required this.bombsCount, required BoardSize size})
+class Bombs {
+  Bombs({required this.bombsCount, required BoardSize size})
     : map = Matrix(Cell.zero, size: size) {
     _placeBombs();
   }
@@ -34,10 +34,10 @@ class BombMap {
   }
 
   void _placeNumbersAroundBomb(Coord bomb) {
-    for (final Coord around in bomb.getCoordsAround(map.size)) {
+    bomb.forEachNeighbor(map.size, (around) {
       if (cellByCoord(around) != Cell.bomb) {
         map.setCell(around, cellByCoord(around)!.getNextNum());
       }
-    }
+    });
   }
 }

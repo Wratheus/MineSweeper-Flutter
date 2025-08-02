@@ -13,24 +13,6 @@ class Coord {
   @override
   String toString() => 'Coord(x: $x, y: $y)';
 
-  static const _directions = [
-    Offset(-1, -1),
-    Offset(-1, 0),
-    Offset(-1, 1),
-    Offset(0, -1),
-    Offset(0, 1),
-    Offset(1, -1),
-    Offset(1, 0),
-    Offset(1, 1),
-  ];
-
-  List<Coord> getCoordsAround(BoardSize size) => _directions
-      .map((d) => Coord(x + d.dx.toInt(), y + d.dy.toInt()))
-      .where(
-        (c) => c.x >= 0 && c.y >= 0 && c.x < size.width && c.y < size.height,
-      )
-      .toList();
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -41,4 +23,27 @@ class Coord {
 
   @override
   int get hashCode => Object.hash(x, y);
+}
+
+extension CoordNeighbors on Coord {
+  void forEachNeighbor(BoardSize size, void Function(Coord) action) {
+    const directions = [
+      Offset(-1, -1),
+      Offset(-1, 0),
+      Offset(-1, 1),
+      Offset(0, -1),
+      Offset(0, 1),
+      Offset(1, -1),
+      Offset(1, 0),
+      Offset(1, 1),
+    ];
+
+    for (final d in directions) {
+      final nx = x + d.dx.toInt();
+      final ny = y + d.dy.toInt();
+      if (nx >= 0 && ny >= 0 && nx < size.width && ny < size.height) {
+        action(Coord(nx, ny));
+      }
+    }
+  }
 }
