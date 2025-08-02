@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
-import 'package:minesweeper/src/core/models/game_state.dart';
 
 class MinesweeperGameplayScreen extends StatefulWidget {
   const MinesweeperGameplayScreen({super.key});
@@ -13,33 +12,23 @@ class MinesweeperGameplayScreen extends StatefulWidget {
 }
 
 class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
-  final Game game = Game(difficulty: Difficulty.beginner)..start();
+  final Game game = Game(difficulty: Difficulty.beginner);
 
   @override
   Widget build(BuildContext context) {
-    final int cols = game.difficulty.size.width.toInt();
-    final int rows = game.difficulty.size.height.toInt();
+    final int cols = game.difficulty.size.width;
+    final int rows = game.difficulty.size.height;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minesweeper'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                // Сделать рестарт игры
-                // Например, создать новую игру, либо вызвать reset
-                // Пока просто сбросим состояние игры
-                game.gamePlay.setState(GameState.start);
-              });
-            },
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () {}),
         ],
       ),
       body: Column(
         children: [
-          Text('State: ${game.gamePlay.getState()}'),
+          Text('State: ${game.getState()}'),
           Expanded(
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -51,23 +40,11 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
                 final int y = index ~/ cols;
                 final coord = Coord(x, y);
 
-                final cell = game.gamePlay.getCell(coord);
+                final cell = game.getCell(coord);
 
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      game.gamePlay.openCell(coord);
-                      game.gamePlay.checkWin();
-                    });
-                  },
-                  onLongPress: () {
-                    setState(() {
-                      if (game.gamePlay.getState() == GameState.playing) {
-                        game.gamePlay.getField().flag.setFlaggedToCell(coord);
-                      }
-                      game.gamePlay.checkWin();
-                    });
-                  },
+                  onTap: () => pressedLeftButton(coord),
+                  onLongPress: () => pressedRightButton(coord),
                   child: Image(image: cell.image),
                 );
               },
@@ -76,5 +53,20 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
         ],
       ),
     );
+  }
+
+  void pressedLeftButton(Coord coord) => setState(
+    () => game
+      ..openCell(coord)
+      ..checkWin(),
+  );
+
+  void pressedRightButton(Coord coord) {
+    setState(() {
+      if (game.state == GameState.playing) {
+        game.flag.setFlaggedToCell(coord);
+        game.checkWin();
+      }
+    });
   }
 }

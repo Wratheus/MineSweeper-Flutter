@@ -1,9 +1,10 @@
-import 'dart:ui';
+
+import 'package:minesweeper/src/core/models/size.dart';
 
 enum Difficulty {
-  beginner(size: Size(9, 9), mines: 10, imageSize: 45),
-  intermediate(size: Size(16, 16), mines: 40, imageSize: 30),
-  expert(size: Size(30, 16), mines: 99, imageSize: 30);
+  beginner(size: BoardSize(9, 9), mines: 10, imageSize: 45),
+  intermediate(size: BoardSize(16, 16), mines: 40, imageSize: 30),
+  expert(size: BoardSize(30, 16), mines: 99, imageSize: 30);
 
   const Difficulty({
     required this.size,
@@ -11,9 +12,7 @@ enum Difficulty {
     required this.imageSize,
   });
 
-  final Size size;
+  final BoardSize size;
   final int mines;
   final int imageSize;
-
-
 }

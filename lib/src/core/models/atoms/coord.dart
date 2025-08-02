@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:minesweeper/src/core/models/size.dart';
 
 @immutable
 class Coord {
@@ -12,21 +13,23 @@ class Coord {
   @override
   String toString() => 'Coord(x: $x, y: $y)';
 
-  List<Coord> getCoordsAround(Size size) {
-    final listCoords = <Coord>[];
-    for (int x = this.x - 1; x <= this.x + 1; x++) {
-      for (int y = this.y - 1; y <= this.y + 1; y++) {
-        if (x >= 0 &&
-            y >= 0 &&
-            x < size.width &&
-            y < size.height &&
-            (x != this.x || y != this.y)) {
-          listCoords.add(Coord(x, y));
-        }
-      }
-    }
-    return listCoords;
-  }
+  static const _directions = [
+    Offset(-1, -1),
+    Offset(-1, 0),
+    Offset(-1, 1),
+    Offset(0, -1),
+    Offset(0, 1),
+    Offset(1, -1),
+    Offset(1, 0),
+    Offset(1, 1),
+  ];
+
+  List<Coord> getCoordsAround(BoardSize size) => _directions
+      .map((d) => Coord(x + d.dx.toInt(), y + d.dy.toInt()))
+      .where(
+        (c) => c.x >= 0 && c.y >= 0 && c.x < size.width && c.y < size.height,
+      )
+      .toList();
 
   @override
   bool operator ==(Object other) =>

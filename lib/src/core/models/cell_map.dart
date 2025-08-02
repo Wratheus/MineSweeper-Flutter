@@ -1,17 +1,16 @@
-import 'dart:ui';
-
 import 'package:minesweeper/src/core/models/atoms/cell.dart';
 import 'package:minesweeper/src/core/models/atoms/coord.dart';
 import 'package:minesweeper/src/core/models/atoms/matrix.dart';
+import 'package:minesweeper/src/core/models/size.dart';
 
 class FlagMap {
   FlagMap({required this.size}) : flagMap = Matrix(Cell.closed, size: size) {
-    _countOfClosedCells = size.width.toInt() * size.height.toInt();
+    _countOfClosedCells = size.squareSize;
     _countOfFlaggedCells = 0;
   }
 
   final Matrix flagMap;
-  final Size size;
+  final BoardSize size;
 
   int _countOfClosedCells = 0;
   int _countOfFlaggedCells = 0;
