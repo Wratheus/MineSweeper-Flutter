@@ -151,13 +151,24 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
     padding: const EdgeInsets.symmetric(horizontal: 8),
     child: DropdownButton<Difficulty>(
       value: selectedDifficulty,
-      underline: Container(),
+      underline: const SizedBox.shrink(),
+      padding: const EdgeInsets.all(5),
+      borderRadius: BorderRadius.circular(5),
       items: Difficulty.values
           .map(
             (d) => DropdownMenuItem<Difficulty>(
               value: d,
-              child: Text(
-                '${d.name[0].toUpperCase()}${d.name.substring(1)} (${d.size.width}x${d.size.height})',
+              child: Row(
+                children: [
+                  Text(switch (d) {
+                    Difficulty.beginner => '😄',
+                    Difficulty.intermediate => '🥸',
+                    Difficulty.expert => '💀',
+                  }),
+                  Text(
+                    ' ${d.name[0].toUpperCase()}${d.name.substring(1)} (${d.size.width}x${d.size.height})',
+                  ),
+                ],
               ),
             ),
           )
