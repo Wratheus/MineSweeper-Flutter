@@ -93,9 +93,9 @@ class Game {
   void openCell(Coord coord) {
     switch (state) {
       case GameState.start:
-        // Первый ход: если не мина, открываем.
         if (bomb.cellByCoord(coord) != Cell.bomb) {
           flag.openCell(coord);
+          _setChecked(coord);
         }
         _revealAround(coord);
         state = GameState.playing;
@@ -109,14 +109,17 @@ class Game {
               lose(coord);
             case Cell.zero:
               flag.openCell(coord);
+              _setChecked(coord);
               _revealAround(coord);
             default:
               flag.openCell(coord);
+              _setChecked(coord);
           }
         }
       default:
         break;
     }
+    checkWin();
   }
 
   /// Chording: автоматическое открытие соседних клеток,
@@ -156,13 +159,17 @@ class Game {
   /// Если количество открытых клеток равно количеству мин, ставим [GameState.win].
   void checkWin() {
     if (state == GameState.playing) {
-      int countChecked = 0;
+      int openedCells = 0;
       for (final bool isChecked in _checked) {
         if (isChecked) {
-          countChecked++;
+          openedCells++;
         }
       }
-      if (countChecked == bomb.bombsCount) {
+
+      final int totalCells = difficulty.size.squareSize;
+      final int nonBombCells = totalCells - bomb.bombsCount;
+
+      if (openedCells == nonBombCells) {
         state = GameState.win;
       }
     }

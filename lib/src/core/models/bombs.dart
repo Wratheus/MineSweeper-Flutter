@@ -8,7 +8,7 @@ import 'package:minesweeper/src/core/models/size.dart';
 /// Класс для генерации и хранения карты мин (нижний уровень игрового поля).
 class Bombs {
   Bombs({required this.bombsCount, required BoardSize size})
-      : map = Matrix(Cell.zero, size: size) {
+    : map = Matrix(Cell.zero, size: size) {
     _placeBombs();
   }
 
