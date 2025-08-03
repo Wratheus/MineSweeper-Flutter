@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
 
-import 'package:minesweeper/src/feature/game/main.dart';
+import 'package:minesweeper/src/feature/menu/main.dart';
 import 'package:provider/provider.dart';
 
 class AppScreen extends StatelessWidget {
@@ -23,7 +23,7 @@ class AppScreen extends StatelessWidget {
         brightness: Brightness.dark,
       ),
       themeMode: appProvider.isDark ? ThemeMode.dark : ThemeMode.light,
-      home: const MineSweeperGamePlayMain(),
+      home: const MenuMain(),
     ),
   );
 }

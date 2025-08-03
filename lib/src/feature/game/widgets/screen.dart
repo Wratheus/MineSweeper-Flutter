@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
-import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/provider/provider.dart';
@@ -25,13 +24,20 @@ class MinesweeperGameplayScreen extends StatelessWidget {
           actions: [
             IconButton(
               icon: Icon(
+                context.watch<AppProvider>().soundOn
+                    ? Icons.volume_up
+                    : Icons.volume_off,
+              ),
+              onPressed: () => context.read<AppProvider>().toggleSound(),
+            ),
+            IconButton(
+              icon: Icon(
                 context.read<AppProvider>().isDark
                     ? Icons.light_mode
                     : Icons.dark_mode,
               ),
               onPressed: () => context.read<AppProvider>().toggleTheme(),
             ),
-            _buildDifficultySelector(controller),
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () => controller.newGame(game.difficulty),
@@ -115,40 +121,6 @@ class MinesweeperGameplayScreen extends StatelessWidget {
         ),
       );
     },
-  );
-
-  Widget _buildDifficultySelector(GameProvider controller) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    child: DropdownButton<Difficulty>(
-      value: controller.game.difficulty,
-      underline: const SizedBox.shrink(),
-      padding: const EdgeInsets.all(5),
-      borderRadius: BorderRadius.circular(5),
-      items: Difficulty.values
-          .map(
-            (d) => DropdownMenuItem<Difficulty>(
-              value: d,
-              child: Row(
-                children: [
-                  Text(switch (d) {
-                    Difficulty.beginner => '😄',
-                    Difficulty.intermediate => '🥸',
-                    Difficulty.expert => '💀',
-                  }),
-                  Text(
-                    ' ${d.name[0].toUpperCase()}${d.name.substring(1)} (${d.size.width}x${d.size.height})',
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
-      onChanged: (difficulty) {
-        if (difficulty != null && difficulty != controller.game.difficulty) {
-          controller.newGame(difficulty);
-        }
-      },
-    ),
   );
 
   Color _getStateColor(BuildContext context, GameState state) =>

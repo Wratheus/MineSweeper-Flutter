@@ -1,8 +1,8 @@
-import 'package:minesweeper/src/core/models/mines.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/flags.dart';
+import 'package:minesweeper/src/core/models/mines.dart';
 
 /// Состояние игры.
 /// [start] — до первого хода,
