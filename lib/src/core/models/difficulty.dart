@@ -9,7 +9,7 @@ import 'package:minesweeper/src/core/models/size.dart';
 /// Используется для настройки игры при её запуске.
 enum Difficulty {
   /// Новичок: 9x9 клеток, 10 мин, крупные изображения.
-  beginner(size: BoardSize(2, 2), mines: 1),
+  beginner(size: BoardSize(9, 9), mines: 10),
 
   /// Средний: 16x16 клеток, 40 мин, изображения поменьше.
   intermediate(size: BoardSize(16, 16), mines: 40),
