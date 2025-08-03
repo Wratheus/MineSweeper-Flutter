@@ -92,11 +92,12 @@ class GameProvider extends ChangeNotifier {
       notifyListeners();
     }
 
+    const int explosionDelayMs = 275;
     // Детонируем выбранную мину
     _game.flag.detonateMine(mineToDetonate);
     notifyListeners();
     context.read<AppProvider>().soundManager.playExplosion();
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: explosionDelayMs));
 
     // Показываем остальные мины
     for (final coord in mines.where((c) => c != mineToDetonate)) {
@@ -106,7 +107,9 @@ class GameProvider extends ChangeNotifier {
       }
 
       notifyListeners();
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(
+        const Duration(milliseconds: explosionDelayMs),
+      );
     }
   }
 

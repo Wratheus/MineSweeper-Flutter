@@ -142,7 +142,6 @@ class MinesweeperGameplayScreen extends StatelessWidget {
 
   Color? _getCellBackgroundColor(BuildContext context, Cell cell) =>
       switch (cell) {
-        Cell.flagged => Colors.green.shade200,
         Cell.exploded => Colors.red.shade300,
         _ => null,
       };

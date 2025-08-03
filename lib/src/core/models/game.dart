@@ -133,6 +133,8 @@ class Game {
           }
         });
       }
+    } else {
+      _lose(coord);
     }
   }
 
