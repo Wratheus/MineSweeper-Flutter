@@ -48,69 +48,71 @@ class MenuScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildAppBar(context),
-              const SizedBox(height: 50),
-              Icon(Icons.grid_3x3, size: 80, color: colorScheme.onPrimary),
-              const SizedBox(height: 16),
-              Text(
-                'Minesweeper',
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              if (record > 0) ...[
-                const SizedBox(height: 10),
+        child: CustomScrollView(
+          slivers: [
+            SliverList.list(
+              children: [
+                SafeArea(child: _buildAppBar(context)),
+                const SizedBox(height: 50),
+                Icon(Icons.grid_3x3, size: 80, color: colorScheme.onPrimary),
+                const SizedBox(height: 16),
                 Text(
-                  'Your best record: $record',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onPrimary.withValues(alpha: 0.85),
-                    fontWeight: FontWeight.w600,
+                  'Minesweeper',
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                if (record > 0) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'Your best record: $record',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onPrimary.withValues(alpha: 0.85),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 30),
+                SafeArea(
+                  top: false,
+                  minimum: const EdgeInsets.only(bottom: kToolbarHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildDifficultyCard(
+                          context,
+                          Difficulty.beginner,
+                          '😄 Beginner',
+                          'Easy start for newcomers',
+                        ),
+                        const SizedBox(height: 15),
+                        _buildDifficultyCard(
+                          context,
+                          Difficulty.intermediate,
+                          '🥸 Intermediate',
+                          'For experienced players',
+                        ),
+                        const SizedBox(height: 15),
+                        _buildDifficultyCard(
+                          context,
+                          Difficulty.expert,
+                          '💀 Expert',
+                          'Only for the brave!',
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
-
-              const SizedBox(height: 30),
-              SafeArea(
-                top: false,
-                minimum: const EdgeInsets.only(bottom: kToolbarHeight),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildDifficultyCard(
-                        context,
-                        Difficulty.beginner,
-                        '😄 Beginner',
-                        'Easy start for newcomers',
-                      ),
-                      const SizedBox(height: 15),
-                      _buildDifficultyCard(
-                        context,
-                        Difficulty.intermediate,
-                        '🥸 Intermediate',
-                        'For experienced players',
-                      ),
-                      const SizedBox(height: 15),
-                      _buildDifficultyCard(
-                        context,
-                        Difficulty.expert,
-                        '💀 Expert',
-                        'Only for the brave!',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

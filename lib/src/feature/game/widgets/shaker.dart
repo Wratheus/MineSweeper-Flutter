@@ -10,8 +10,7 @@ class Shaker extends StatefulWidget {
   State<Shaker> createState() => _ShakerState();
 }
 
-class _ShakerState extends State<Shaker>
-    with SingleTickerProviderStateMixin {
+class _ShakerState extends State<Shaker> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _offset;
 
@@ -33,7 +32,7 @@ class _ShakerState extends State<Shaker>
   @override
   void didUpdateWidget(covariant Shaker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.animate) {
+    if (widget.animate && !oldWidget.animate) {
       _controller.forward(from: 0);
     }
   }
