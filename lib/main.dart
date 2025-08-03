@@ -8,7 +8,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowTitle('Minesweeper');
+    setWindowTitle('minesweeper');
     setWindowMinSize(const Size(300, 400));
     setWindowMaxSize(Size.infinite);
   }

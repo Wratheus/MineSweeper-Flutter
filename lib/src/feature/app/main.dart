@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:minesweeper/src/feature/game/main.dart';
+import 'package:minesweeper/src/feature/app/provider/provider.dart';
+import 'package:minesweeper/src/feature/app/widgets/screen.dart';
+import 'package:provider/provider.dart';
 
 class AppMain extends StatelessWidget {
   const AppMain({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Minesweeper',
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      colorSchemeSeed: Colors.blue,
-      brightness: Brightness.light,
-    ),
-    home: const MineSweeperGamePlayMain(),
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+    create: (context) => AppProvider(),
+    child: const AppScreen(),
   );
 }

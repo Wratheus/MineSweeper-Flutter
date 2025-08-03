@@ -3,7 +3,8 @@ import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
-import 'package:minesweeper/src/feature/game/provider.dart';
+import 'package:minesweeper/src/feature/app/provider/provider.dart';
+import 'package:minesweeper/src/feature/game/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/confetti.dart';
 import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,14 @@ class MinesweeperGameplayScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           actions: [
+            IconButton(
+              icon: Icon(
+                context.read<AppProvider>().isDark
+                    ? Icons.light_mode
+                    : Icons.dark_mode,
+              ),
+              onPressed: () => context.read<AppProvider>().toggleTheme(),
+            ),
             _buildDifficultySelector(controller),
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -53,7 +62,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                       StatusItem(
                         icon: Icons.info,
                         text: game.state.name.toUpperCase(),
-                        color: _getStateColor(game.state),
+                        color: _getStateColor(context, game.state),
                       ),
                     ],
                   ),
@@ -80,7 +89,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
                           decoration: BoxDecoration(
-                            color: _getCellBackgroundColor(cell),
+                            color: _getCellBackgroundColor(context, cell),
                             border: Border.all(color: Colors.grey.shade400),
                           ),
                           child: Padding(
@@ -88,6 +97,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                             child: Image.asset(
                               cell.imagePath,
                               fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
                             ),
                           ),
                         ),
@@ -137,29 +147,18 @@ class MinesweeperGameplayScreen extends StatelessWidget {
     ),
   );
 
-  Color _getStateColor(GameState state) {
-    switch (state) {
-      case GameState.win:
-        return Colors.green;
-      case GameState.lose:
-        return Colors.red;
-      case GameState.playing:
-        return Colors.orange;
-      case GameState.start:
-        return Colors.black87;
-    }
-  }
+  Color _getStateColor(BuildContext context, GameState state) =>
+      switch (state) {
+        GameState.win => Colors.green,
+        GameState.lose => Colors.red,
+        GameState.playing => Colors.orange,
+        GameState.start => IconTheme.of(context).color!,
+      };
 
-  Color _getCellBackgroundColor(Cell cell) {
-    switch (cell) {
-      case Cell.opened:
-        return Colors.grey.shade200;
-      case Cell.flagged:
-        return Colors.yellow.shade200;
-      case Cell.bombed:
-        return Colors.red.shade300;
-      default:
-        return Colors.grey.shade300;
-    }
-  }
+  Color? _getCellBackgroundColor(BuildContext context, Cell cell) =>
+      switch (cell) {
+        Cell.flagged => Theme.of(context).canvasColor,
+        Cell.bombed => Colors.red.shade300,
+        _ => null,
+      };
 }

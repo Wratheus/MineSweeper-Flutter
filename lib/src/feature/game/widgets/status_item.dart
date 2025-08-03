@@ -15,13 +15,13 @@ class StatusItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, color: color ?? Theme.of(context).colorScheme.primary),
+      Icon(icon, color: color ?? IconTheme.of(context).color!),
       const SizedBox(width: 6),
       Text(
         text,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: color ?? Colors.black87,
+          color: color ?? IconTheme.of(context).color!,
         ),
       ),
     ],

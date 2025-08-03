@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minesweeper/src/feature/game/provider.dart';
+import 'package:minesweeper/src/feature/game/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/screen.dart';
 import 'package:provider/provider.dart';
 
