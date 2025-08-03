@@ -2,8 +2,8 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/game.dart';
 
-class CustomConfettiWidget extends StatefulWidget {
-  const CustomConfettiWidget({
+class Confetti extends StatefulWidget {
+  const Confetti({
     required this.game,
     required this.child,
     super.key,
@@ -13,10 +13,10 @@ class CustomConfettiWidget extends StatefulWidget {
   final Widget child;
 
   @override
-  State<CustomConfettiWidget> createState() => _CustomConfettiWidgetState();
+  State<Confetti> createState() => _ConfettiState();
 }
 
-class _CustomConfettiWidgetState extends State<CustomConfettiWidget> {
+class _ConfettiState extends State<Confetti> {
   late ConfettiController confettiController;
 
   @override

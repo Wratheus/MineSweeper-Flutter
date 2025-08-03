@@ -136,7 +136,10 @@ class Game {
   /// - Все мины показываются.
   /// - Ошибочные флаги помечаются как "нет мины".
   /// - Кликнутая мина помечается как взорванная.
-  void _lose(Coord bombClicked) {
+  @Deprecated('user [_lose()] method')
+  // TODO(Aleksandr): will be removed.
+  // ignore: unused_element
+  void _loseWithDetonation(Coord bombClicked) {
     _state = GameState.lose;
     for (int x = 0; x < difficulty.size.width; x++) {
       for (int y = 0; y < difficulty.size.height; y++) {
@@ -150,6 +153,8 @@ class Game {
     }
     flag.detonateBomb(bombClicked);
   }
+
+  void _lose(Coord bombClicked) => _state = GameState.lose;
 
   /// Проверяет победу:
   /// Если количество открытых клеток равно количеству мин, ставим [GameState.win].

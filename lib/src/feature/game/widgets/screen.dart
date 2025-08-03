@@ -6,6 +6,7 @@ import 'package:minesweeper/src/core/models/game.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/confetti.dart';
+import 'package:minesweeper/src/feature/game/widgets/shaker.dart';
 import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
 import 'package:provider/provider.dart';
 
@@ -37,75 +38,78 @@ class MinesweeperGameplayScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: CustomConfettiWidget(
-          game: game,
-          child: Padding(
-            padding: const EdgeInsets.all(5),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      StatusItem(
-                        icon: Icons.flag,
-                        text: '${game.countFlags} / ${game.difficulty.mines}',
-                      ),
-                      StatusItem(
-                        icon: Icons.timer,
-                        text: '${controller.secondsElapsed}s',
-                      ),
-                      StatusItem(
-                        icon: Icons.info,
-                        text: game.state.name.toUpperCase(),
-                        color: _getStateColor(context, game.state),
-                      ),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: cols,
-                      mainAxisSpacing: 1,
-                      crossAxisSpacing: 1,
+        body: Shaker(
+          animate: controller.game.state == GameState.lose,
+          child: Confetti(
+            game: game,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                    itemCount: rows * cols,
-                    itemBuilder: (context, index) {
-                      final int x = index % cols;
-                      final int y = index ~/ cols;
-                      final Coord coord = Coord(x, y);
-                      final Cell cell = game.getCell(coord);
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        StatusItem(
+                          icon: Icons.flag,
+                          text: '${game.countFlags} / ${game.difficulty.mines}',
+                        ),
+                        StatusItem(
+                          icon: Icons.timer,
+                          text: '${controller.secondsElapsed}s',
+                        ),
+                        StatusItem(
+                          icon: Icons.info,
+                          text: game.state.name.toUpperCase(),
+                          color: _getStateColor(context, game.state),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        mainAxisSpacing: 1,
+                        crossAxisSpacing: 1,
+                      ),
+                      itemCount: rows * cols,
+                      itemBuilder: (context, index) {
+                        final int x = index % cols;
+                        final int y = index ~/ cols;
+                        final Coord coord = Coord(x, y);
+                        final Cell cell = game.getCell(coord);
 
-                      return GestureDetector(
-                        onTap: () => controller.onLeftClick(coord),
-                        onLongPress: () => controller.onRightClick(coord),
-                        onSecondaryTap: () => controller.onRightClick(coord),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          decoration: BoxDecoration(
-                            color: _getCellBackgroundColor(context, cell),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(1.5),
-                            child: Image.asset(
-                              cell.imagePath,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
+                        return GestureDetector(
+                          onTap: () => controller.onLeftClick(coord),
+                          onLongPress: () => controller.onRightClick(coord),
+                          onSecondaryTap: () => controller.onRightClick(coord),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            decoration: BoxDecoration(
+                              color: _getCellBackgroundColor(context, cell),
+                              border: Border.all(color: Colors.grey.shade400),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(1.5),
+                              child: Image.asset(
+                                cell.imagePath,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
