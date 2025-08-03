@@ -18,6 +18,9 @@ class GameProvider extends ChangeNotifier {
   final Stopwatch _stopwatch = Stopwatch();
   late final Ticker _ticker;
 
+  /// Идентификатор текущей сессии игры to protect future _animateLose
+  int _sessionId = 0;
+
   void _onTick(Duration _) {
     if (_stopwatch.isRunning) {
       _secondsElapsed = _stopwatch.elapsed.inSeconds;
@@ -49,11 +52,18 @@ class GameProvider extends ChangeNotifier {
   }
 
   Future<void> _animateLose(BuildContext context, Coord mineClicked) async {
+    final int currentSession = _sessionId;
+
     final mines = <Coord>[];
     final mistakes = <Coord>[];
 
     for (int x = 0; x < _game.difficulty.size.width; x++) {
       for (int y = 0; y < _game.difficulty.size.height; y++) {
+        // Проверка если игра уже была перезапущена ничего не делать
+        // Пользователь не дождался анимации
+        if (currentSession != _sessionId) return;
+
+
         final coord = Coord(x, y);
         final isMine = _game.mine.cellByCoord(coord) == Cell.mine;
         final isFlagged = _game.flag.get(coord) == Cell.flagged;
@@ -88,6 +98,7 @@ class GameProvider extends ChangeNotifier {
 
     // Помечаем ошибочные флаги
     for (final coord in mistakes) {
+      if (currentSession != _sessionId) return;
       _game.flag.markNoMine(coord);
       notifyListeners();
     }
@@ -101,6 +112,7 @@ class GameProvider extends ChangeNotifier {
 
     // Показываем остальные мины
     for (final coord in mines.where((c) => c != mineToDetonate)) {
+      if (currentSession != _sessionId) return;
       _game.flag.revealMine(coord);
       if (context.mounted) {
         context.read<AppProvider>().soundManager.playExplosion();
@@ -114,6 +126,7 @@ class GameProvider extends ChangeNotifier {
   }
 
   void newGame(Difficulty difficulty) {
+    _sessionId++; // Увеличиваем ID игры
     _game = Game(difficulty: difficulty);
     _stopwatch
       ..reset()
