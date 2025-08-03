@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
@@ -36,27 +38,33 @@ class MenuScreen extends StatelessWidget {
     BuildContext context,
     Difficulty difficulty,
   ) async {
-    final double availableWidth = MediaQuery.of(context).size.width - 36;
-    final double cellSize = (availableWidth / difficulty.size.width).clamp(
-      20,
-      50,
-    );
+    final Screen? screen = await getCurrentScreen();
+    if (screen == null) return;
 
-    const double verticalPadding = 120 + 35;
-
+    const double verticalPadding = 155;
     const double spacing = 1;
 
-    final double totalSpacingWidth = difficulty.size.width * spacing;
-    final double totalSpacingHeight = difficulty.size.height * spacing;
+    final double totalSpacingHeight = (difficulty.size.height - 1) * spacing;
+
+    final double maxHeight = screen.frame.height - verticalPadding;
+
+    // Размер клетки по высоте, учитываем spacing
+    final double maxCellHeight =
+        (maxHeight - totalSpacingHeight) / difficulty.size.height;
+
+    // Аналогично для ширины
+    final double maxWidth = screen.frame.width - 155;
+    final double totalSpacingWidth = (difficulty.size.width - 1) * spacing;
+    final double maxCellWidth =
+        (maxWidth - totalSpacingWidth) / difficulty.size.width;
+
+    final double cellSize = math.min(maxCellWidth, maxCellHeight).clamp(20, 45);
 
     final double width = difficulty.size.width * cellSize + totalSpacingWidth;
     final double height =
         difficulty.size.height * cellSize +
-        verticalPadding +
-        totalSpacingHeight;
-
-    final Screen? screen = await getCurrentScreen();
-    if (screen == null) return;
+        totalSpacingHeight +
+        verticalPadding;
 
     setWindowFrame(
       Rect.fromLTWH(

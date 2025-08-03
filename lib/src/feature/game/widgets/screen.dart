@@ -79,48 +79,55 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ColoredBox(
-                    color: context.read<AppProvider>().isDark
-                        ? Colors.white30
-                        : Colors.transparent,
-                    child: GridView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: cols,
-                        mainAxisSpacing: 1,
-                        crossAxisSpacing: 1,
-                      ),
-                      itemCount: rows * cols,
-                      itemBuilder: (context, index) {
-                        final int x = index % cols;
-                        final int y = index ~/ cols;
-                        final Coord coord = Coord(x, y);
-                        final Cell cell = game.getCell(coord);
 
-                        return GestureDetector(
-                          onTap: () => controller.onLeftClick(context, coord),
-                          onLongPress: () =>
-                              controller.onRightClick(context, coord),
-                          onSecondaryTap: () =>
-                              controller.onRightClick(context, coord),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            decoration: BoxDecoration(
-                              color: _getCellBackgroundColor(context, cell),
-                              border: Border.all(color: Colors.grey.shade400),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(1.5),
-                              child: Image.asset(
-                                cell.imagePath,
-                                fit: BoxFit.contain,
+                  Expanded(
+                    child: ColoredBox(
+                      color: context.read<AppProvider>().isDark
+                          ? Colors.white30
+                          : Colors.transparent,
+                      child: InteractiveViewer(
+                        minScale: 0.5,
+                        child: GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: cols,
+                                mainAxisSpacing: 1,
+                                crossAxisSpacing: 1,
                               ),
-                            ),
-                          ),
-                        );
-                      },
+                          itemCount: rows * cols,
+                          itemBuilder: (context, index) {
+                            final int x = index % cols;
+                            final int y = index ~/ cols;
+                            final Coord coord = Coord(x, y);
+                            final Cell cell = game.getCell(coord);
+
+                            return GestureDetector(
+                              onTap: () =>
+                                  controller.onLeftClick(context, coord),
+                              onLongPress: () =>
+                                  controller.onRightClick(context, coord),
+                              onSecondaryTap: () =>
+                                  controller.onRightClick(context, coord),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                decoration: BoxDecoration(
+                                  color: _getCellBackgroundColor(context, cell),
+                                  border: Border.all(
+                                    color: Colors.grey.shade400,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(1.5),
+                                  child: Image.asset(
+                                    cell.imagePath,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ],
