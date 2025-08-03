@@ -4,7 +4,8 @@ import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
-import 'package:minesweeper/src/core/utils/sounds.dart';
+import 'package:minesweeper/src/feature/app/provider/provider.dart';
+import 'package:provider/provider.dart';
 
 class GameProvider extends ChangeNotifier {
   GameProvider({Difficulty difficulty = Difficulty.beginner}) {
@@ -29,14 +30,18 @@ class GameProvider extends ChangeNotifier {
       if (_game.state == GameState.start) {
         _stopwatch.start();
       }
-      _game.openCell(coord, onOpenCellCallback: () => SoundManager().playDig());
+      _game.openCell(
+        coord,
+        onOpenCellCallback: () =>
+            context.read<AppProvider>().soundManager.playDig(),
+      );
       if (_game.state == GameState.lose) {
         _stopwatch.stop();
         _animateLose(context, coord);
         return;
       }
       if (_game.state == GameState.win) {
-        SoundManager().playWin(context);
+        context.read<AppProvider>().soundManager.playWin();
         _stopwatch.stop();
       }
       notifyListeners();
@@ -84,13 +89,15 @@ class GameProvider extends ChangeNotifier {
     // Детонируем выбранную мину
     _game.flag.detonateMine(mineToDetonate);
     notifyListeners();
-    SoundManager().playExplosion();
+    context.read<AppProvider>().soundManager.playExplosion();
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
     // Показываем остальные мины
     for (final coord in mines.where((c) => c != mineToDetonate)) {
       _game.flag.revealMine(coord);
-      SoundManager().playExplosion();
+      if (context.mounted) {
+        context.read<AppProvider>().soundManager.playExplosion();
+      }
 
       notifyListeners();
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -114,7 +121,7 @@ class GameProvider extends ChangeNotifier {
   }
 
   void onRightClick(BuildContext context, Coord coord) {
-    SoundManager().playFlag(context);
+    context.read<AppProvider>().soundManager.playFlag();
     if (_game.state == GameState.playing) {
       _game.flag.toggleFlag(coord);
       notifyListeners();

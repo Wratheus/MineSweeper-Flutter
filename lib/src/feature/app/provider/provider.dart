@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:minesweeper/src/core/utils/sounds.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -18,6 +18,7 @@ class AppProvider extends ChangeNotifier {
 
   void toggleSound() {
     _soundOn = !_soundOn;
+    soundManager.soundOn = _soundOn;
     notifyListeners();
   }
 }

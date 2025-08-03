@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/material.dart';
 
 class SoundManager {
+  bool soundOn = true;
+
   void playEffect(String assetPath) {
+    if (!soundOn) return;
     try {
       final AudioPlayer player = AudioPlayer();
       player.play(AssetSource(assetPath)).ignore();
@@ -13,7 +15,7 @@ class SoundManager {
 
   void playDig() => playEffect('sounds/dig.ogg');
 
-  void playFlag(BuildContext context) => playEffect('sounds/flag.mp3');
+  void playFlag() => playEffect('sounds/flag.mp3');
 
   void playExplosion() {
     final Random random = Random();
@@ -25,5 +27,5 @@ class SoundManager {
     playEffect(sounds[random.nextInt(3)]);
   }
 
-  void playWin(BuildContext context) => playEffect('sounds/win.wav');
+  void playWin() => playEffect('sounds/win.wav');
 }
