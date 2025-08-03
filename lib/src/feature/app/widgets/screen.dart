@@ -4,8 +4,11 @@ import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/menu/main.dart';
 import 'package:provider/provider.dart';
 
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
+
 class AppScreen extends StatefulWidget {
-  AppScreen({super.key});
+  const AppScreen({super.key});
 
   @override
   State<AppScreen> createState() => _AppScreenState();
@@ -19,8 +22,6 @@ class _AppScreenState extends State<AppScreen> {
     }
     super.initState();
   }
-
-  final RouteObserver routeObserver = RouteObserver();
 
   @override
   Widget build(BuildContext context) => Consumer<AppProvider>(
