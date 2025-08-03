@@ -4,8 +4,21 @@ import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/menu/main.dart';
 import 'package:provider/provider.dart';
 
-class AppScreen extends StatelessWidget {
+class AppScreen extends StatefulWidget {
   AppScreen({super.key});
+
+  @override
+  State<AppScreen> createState() => _AppScreenState();
+}
+
+class _AppScreenState extends State<AppScreen> {
+  @override
+  void initState() {
+    if (context.mounted) {
+      context.read<AppProvider>().loadSettings();
+    }
+    super.initState();
+  }
 
   final RouteObserver routeObserver = RouteObserver();
 
