@@ -26,7 +26,7 @@ class AppScreen extends StatelessWidget {
         brightness: Brightness.dark,
       ),
       themeMode: appProvider.isDark ? ThemeMode.dark : ThemeMode.light,
-      home: MenuMain(routeObserver: routeObserver),
+      home: const MenuMain(),
     ),
   );
 }

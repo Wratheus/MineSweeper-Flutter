@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
@@ -86,9 +88,10 @@ class Game {
   /// - Если клетка уже открыта, проверяет chording.
   /// - Если мина — проигрыш.
   /// - Если пустая клетка (0), раскрываем соседние.
-  void openCell(Coord coord) {
+  void openCell(Coord coord, {required VoidCallback onOpenCellCallback}) {
     switch (state) {
       case GameState.start:
+        onOpenCellCallback();
         if (mine.cellByCoord(coord) != Cell.mine) {
           flag.openCell(coord);
           _setChecked(coord);
@@ -100,6 +103,7 @@ class Game {
           _chordIfFlagsMatch(coord);
         }
         if (flag.get(coord) == Cell.closed) {
+          onOpenCellCallback();
           switch (mine.cellByCoord(coord)) {
             case Cell.mine:
               _lose(coord);
@@ -125,7 +129,7 @@ class Game {
       if (flag.countFlagCellsAround(coord) == mine.cellByCoord(coord)!.index) {
         coord.forEachNeighbor(difficulty.size, (around) {
           if (flag.get(around) == Cell.closed) {
-            openCell(around);
+            openCell(around, onOpenCellCallback: () {});
           }
         });
       }

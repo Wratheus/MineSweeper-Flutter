@@ -29,8 +29,7 @@ class GameProvider extends ChangeNotifier {
       if (_game.state == GameState.start) {
         _stopwatch.start();
       }
-      SoundManager().playDig();
-      _game.openCell(coord);
+      _game.openCell(coord, onOpenCellCallback: () => SoundManager().playDig());
       if (_game.state == GameState.lose) {
         _stopwatch.stop();
         _animateLose(context, coord);
@@ -45,28 +44,63 @@ class GameProvider extends ChangeNotifier {
   }
 
   Future<void> _animateLose(BuildContext context, Coord mineClicked) async {
-    // Собираем список всех мин
-    await SoundManager().playExplosion(context);
     final mines = <Coord>[];
+    final mistakes = <Coord>[];
+
     for (int x = 0; x < _game.difficulty.size.width; x++) {
       for (int y = 0; y < _game.difficulty.size.height; y++) {
         final coord = Coord(x, y);
-        if (_game.mine.cellByCoord(coord) == Cell.mine) {
+        final isMine = _game.mine.cellByCoord(coord) == Cell.mine;
+        final isFlagged = _game.flag.get(coord) == Cell.flagged;
+
+        if (isMine) {
           mines.add(coord);
+        } else if (isFlagged) {
+          mistakes.add(coord);
         }
       }
     }
 
-    // Сначала взорванная мина
-    _game.flag.detonateMine(mineClicked);
+    Coord mineToDetonate;
+    if (_game.mine.cellByCoord(mineClicked) == Cell.mine) {
+      // Если реально кликнули по мине
+      mineToDetonate = mineClicked;
+    } else {
+      // Если кликнули по числу, ищем ближайшую незафлагованную мину
+      final unflaggedMines =
+          mines.where((m) => _game.flag.get(m) != Cell.flagged).toList()
+            ..sort((a, b) {
+              final da =
+                  (a.x - mineClicked.x).abs() +
+                  (a.y - mineClicked.y).abs(); // Манхэттен
+              final db =
+                  (b.x - mineClicked.x).abs() + (b.y - mineClicked.y).abs();
+              return da.compareTo(db);
+            });
+
+      mineToDetonate = unflaggedMines.first;
+    }
+
+    // Детонируем выбранную мину
+    _game.flag.detonateMine(mineToDetonate);
     notifyListeners();
+    SoundManager().playExplosion();
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
-    // Потом остальные
-    for (final coord in mines.where((c) => c != mineClicked)) {
+    // Показываем остальные мины
+    for (final coord in mines.where((c) => c != mineToDetonate)) {
       _game.flag.revealMine(coord);
+      SoundManager().playExplosion();
+
       notifyListeners();
       await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+
+    // Помечаем ошибочные флаги
+    for (final coord in mistakes) {
+      _game.flag.markNoMine(coord);
+      notifyListeners();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
   }
 

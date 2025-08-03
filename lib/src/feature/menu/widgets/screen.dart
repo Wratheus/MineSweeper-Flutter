@@ -6,9 +6,7 @@ import 'package:minesweeper/src/feature/game/widgets/screen.dart';
 import 'package:provider/provider.dart';
 
 class MenuScreen extends StatelessWidget {
-  const MenuScreen({required this.routeObserver, super.key});
-
-  final RouteObserver routeObserver;
+  const MenuScreen({super.key});
 
   void _startGame(BuildContext context, Difficulty difficulty) =>
       Navigator.push(
