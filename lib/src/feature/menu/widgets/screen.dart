@@ -145,6 +145,12 @@ class MenuScreen extends StatelessWidget {
                           '☠️ Dead-end',
                           'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
                         ),
+                        _buildDifficultyCard(
+                          context,
+                          null,
+                          '🎨 Custom',
+                          'Set your own size and mines',
+                        ),
                       ],
                     ),
                   ),
@@ -190,7 +196,7 @@ class MenuScreen extends StatelessWidget {
 
   Widget _buildDifficultyCard(
     BuildContext context,
-    Difficulty difficulty,
+    Difficulty? difficulty,
     String title,
     String subtitle,
   ) {
@@ -198,7 +204,9 @@ class MenuScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return GestureDetector(
-      onTap: () => _startGame(context, difficulty),
+      onTap: () => difficulty != null
+          ? _startGame(context, difficulty)
+          : _showCustomDifficultyDialog(context),
       child: Card(
         color: colorScheme.surface.withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -221,6 +229,63 @@ class MenuScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCustomDifficultyDialog(BuildContext context) {
+    final widthController = TextEditingController(text: '10');
+    final heightController = TextEditingController(text: '10');
+    final minesController = TextEditingController(text: '10');
+
+    showDialog<Object?>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Custom Difficulty'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: widthController,
+              decoration: const InputDecoration(labelText: 'Width'),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: heightController,
+              decoration: const InputDecoration(labelText: 'Height'),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: minesController,
+              decoration: const InputDecoration(labelText: 'Mines'),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final width = int.tryParse(widthController.text) ?? 9;
+              final height = int.tryParse(heightController.text) ?? 9;
+              final mines = int.tryParse(minesController.text) ?? 10;
+
+              if (width > 0 &&
+                  height > 0 &&
+                  mines > 0 &&
+                  mines < width * height) {
+                Navigator.pop(context);
+                _startGame(context, Difficulty.custom(width, height, mines));
+              } else {
+                // Можно добавить вывод ошибки валидации
+              }
+            },
+            child: const Text('Start'),
+          ),
+        ],
       ),
     );
   }

@@ -108,6 +108,7 @@ class GameProvider extends ChangeNotifier {
       Difficulty.intermediate => 215,
       Difficulty.expert => 200,
       Difficulty.deadEnd => 100,
+      Difficulty() => 150,
     };
 
     // Детонируем выбранную мину
