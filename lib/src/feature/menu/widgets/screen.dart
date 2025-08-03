@@ -4,30 +4,71 @@ import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/screen.dart';
 import 'package:provider/provider.dart';
+import 'package:window_size/window_size.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
-  void _startGame(BuildContext context, Difficulty difficulty) =>
-      Navigator.push(
-        context,
-        PageRouteBuilder<Object?>(
-          pageBuilder: (_, _, _) => ChangeNotifierProvider(
-            create: (_) => GameProvider()..newGame(difficulty),
-            child: const MinesweeperGameplayScreen(),
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final tween = Tween(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).chain(CurveTween(curve: Curves.easeInOut));
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
+  void _startGame(BuildContext context, Difficulty difficulty) {
+    _updateWindowSize(difficulty);
+    Navigator.push(
+      context,
+      PageRouteBuilder<Object?>(
+        pageBuilder: (_, _, _) => ChangeNotifierProvider(
+          create: (_) => GameProvider()..newGame(difficulty),
+          child: const MinesweeperGameplayScreen(),
         ),
-      );
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final tween = Tween(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _updateWindowSize(Difficulty difficulty) async {
+    final double cellSize = switch(difficulty) {
+      Difficulty.beginner => 50,
+      Difficulty.intermediate => 40,
+      Difficulty.expert => 30,
+    };
+
+    const double horizontalPadding = 32;
+    const double appBarHeight = 56; // Стандартная высота AppBar
+    const double verticalPadding = 120 + appBarHeight;
+
+    const double spacing = 1;
+
+    final double totalSpacingWidth = difficulty.size.width * spacing;
+    final double totalSpacingHeight = difficulty.size.height * spacing;
+
+    final double width =
+        difficulty.size.width * cellSize +
+        horizontalPadding +
+        totalSpacingWidth;
+    final double height =
+        difficulty.size.height * cellSize +
+        verticalPadding +
+        totalSpacingHeight;
+
+    final Screen? screen = await getCurrentScreen();
+    if (screen == null) return;
+
+    setWindowFrame(
+      Rect.fromLTWH(
+        (screen.frame.width - width) / 2,
+        (screen.frame.height - height) / 2,
+        width,
+        height,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
