@@ -1,25 +1,23 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
+import 'package:minesweeper/src/core/utils/window.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
-import 'package:minesweeper/src/feature/game/provider/provider.dart';
-import 'package:minesweeper/src/feature/game/widgets/screen.dart';
+import 'package:minesweeper/src/feature/game/main.dart';
+import 'package:minesweeper/src/feature/menu/widgets/card.dart';
+import 'package:minesweeper/src/feature/menu/widgets/custom_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:window_size/window_size.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
-  void _startGame(BuildContext context, Difficulty difficulty) {
-    _updateWindowSize(context, difficulty);
-    Navigator.push(
+  Future<void> _startGame(BuildContext context, Difficulty difficulty) async {
+    await WindowUtils.updateWindowSize(difficulty);
+    if (!context.mounted) return;
+    await Navigator.push(
       context,
       PageRouteBuilder<Object?>(
-        pageBuilder: (_, _, _) => ChangeNotifierProvider(
-          create: (_) => GameProvider()..newGame(difficulty),
-          child: const MinesweeperGameplayScreen(),
-        ),
+        pageBuilder: (_, _, _) =>
+            MineSweeperGamePlayMain(difficulty: difficulty),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final tween = Tween(
             begin: const Offset(0, 1),
@@ -34,44 +32,11 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _updateWindowSize(
-    BuildContext context,
-    Difficulty difficulty,
-  ) async {
-    final Screen? screen = await getCurrentScreen();
-    if (screen == null) return;
-
-    const double verticalPadding = 155;
-    const double spacing = 1;
-
-    final double totalSpacingHeight = (difficulty.size.height - 1) * spacing;
-
-    final double maxHeight = screen.frame.height - verticalPadding;
-
-    // Размер клетки по высоте, учитываем spacing
-    final double maxCellHeight =
-        (maxHeight - totalSpacingHeight) / difficulty.size.height;
-
-    // Аналогично для ширины
-    final double maxWidth = screen.frame.width - 155;
-    final double totalSpacingWidth = (difficulty.size.width - 1) * spacing;
-    final double maxCellWidth =
-        (maxWidth - totalSpacingWidth) / difficulty.size.width;
-
-    final double cellSize = math.min(maxCellWidth, maxCellHeight).clamp(20, 45);
-
-    final double width = difficulty.size.width * cellSize + totalSpacingWidth;
-    final double height =
-        difficulty.size.height * cellSize +
-        totalSpacingHeight +
-        verticalPadding;
-
-    setWindowFrame(
-      Rect.fromLTWH(
-        (screen.frame.width - width) / 2,
-        (screen.frame.height - height) / 2,
-        width,
-        height,
+  void _showCustomDifficultyDialog(BuildContext context) {
+    showDialog<Object?>(
+      context: context,
+      builder: (_) => CustomDifficultyDialog(
+        onStart: (difficulty) => _startGame(context, difficulty),
       ),
     );
   }
@@ -109,7 +74,6 @@ class MenuScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 30),
                 SafeArea(
                   top: false,
@@ -119,37 +83,45 @@ class MenuScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 15,
                       children: [
-                        _buildDifficultyCard(
-                          context,
-                          Difficulty.beginner,
-                          '😄 Beginner',
-                          'Easy start\n${Difficulty.beginner.size}, ${Difficulty.beginner.mines} mines',
+                        DifficultyCard(
+                          difficulty: Difficulty.beginner,
+                          title: '😄 Beginner',
+                          subtitle:
+                              'Easy start\n${Difficulty.beginner.size}, ${Difficulty.beginner.mines} mines',
+                          onTap: () => _startGame(context, Difficulty.beginner),
                         ),
-                        _buildDifficultyCard(
-                          context,
-                          Difficulty.intermediate,
-                          '🥸 Intermediate',
-                          'For experienced\n${Difficulty.intermediate.size}, ${Difficulty.intermediate.mines} mines',
+                        const SizedBox(height: 15),
+                        DifficultyCard(
+                          difficulty: Difficulty.intermediate,
+                          title: '🥸 Intermediate',
+                          subtitle:
+                              'For experienced\n${Difficulty.intermediate.size}, ${Difficulty.intermediate.mines} mines',
+                          onTap: () =>
+                              _startGame(context, Difficulty.intermediate),
                         ),
-                        _buildDifficultyCard(
-                          context,
-                          Difficulty.expert,
-                          '💀 Expert',
-                          'Only for the brave\n${Difficulty.expert.size}, ${Difficulty.expert.mines} mines',
+                        const SizedBox(height: 15),
+                        DifficultyCard(
+                          difficulty: Difficulty.expert,
+                          title: '💀 Expert',
+                          subtitle:
+                              'Only for the brave\n${Difficulty.expert.size}, ${Difficulty.expert.mines} mines',
+                          onTap: () => _startGame(context, Difficulty.expert),
                         ),
-                        _buildDifficultyCard(
-                          context,
-                          Difficulty.deadEnd,
-                          '☠️ Dead-end',
-                          'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
+                        const SizedBox(height: 15),
+                        DifficultyCard(
+                          difficulty: Difficulty.deadEnd,
+                          title: '☠️ Dead-end',
+                          subtitle:
+                              'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
+                          onTap: () => _startGame(context, Difficulty.deadEnd),
                         ),
-                        _buildDifficultyCard(
-                          context,
-                          null,
-                          '🎨 Custom',
-                          'Set your own size and mines',
+                        const SizedBox(height: 15),
+                        DifficultyCard(
+                          difficulty: null,
+                          title: '🎨 Custom',
+                          subtitle: 'Set your own size and mines',
+                          onTap: () => _showCustomDifficultyDialog(context),
                         ),
                       ],
                     ),
@@ -188,102 +160,6 @@ class MenuScreen extends StatelessWidget {
               color: colorScheme.onPrimary,
             ),
             onPressed: () => context.read<AppProvider>().toggleTheme(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDifficultyCard(
-    BuildContext context,
-    Difficulty? difficulty,
-    String title,
-    String subtitle,
-  ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return GestureDetector(
-      onTap: () => difficulty != null
-          ? _startGame(context, difficulty)
-          : _showCustomDifficultyDialog(context),
-      child: Card(
-        color: colorScheme.surface.withValues(alpha: 0.95),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 6,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: 20,
-            children: [
-              Text(title, style: theme.textTheme.titleLarge),
-              Flexible(
-                child: Text(
-                  subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showCustomDifficultyDialog(BuildContext context) {
-    final widthController = TextEditingController(text: '10');
-    final heightController = TextEditingController(text: '10');
-    final minesController = TextEditingController(text: '10');
-
-    showDialog<Object?>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Custom Difficulty'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: widthController,
-              decoration: const InputDecoration(labelText: 'Width'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: heightController,
-              decoration: const InputDecoration(labelText: 'Height'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: minesController,
-              decoration: const InputDecoration(labelText: 'Mines'),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final width = int.tryParse(widthController.text) ?? 9;
-              final height = int.tryParse(heightController.text) ?? 9;
-              final mines = int.tryParse(minesController.text) ?? 10;
-
-              if (width > 0 &&
-                  height > 0 &&
-                  mines > 0 &&
-                  mines < width * height) {
-                Navigator.pop(context);
-                _startGame(context, Difficulty.custom(width, height, mines));
-              } else {
-                // Можно добавить вывод ошибки валидации
-              }
-            },
-            child: const Text('Start'),
           ),
         ],
       ),

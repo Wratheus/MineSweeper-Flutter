@@ -3,7 +3,7 @@ import 'package:minesweeper/src/core/utils/sounds.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppProvider extends ChangeNotifier {
-  final SoundManager soundManager = SoundManager();
+  final SoundUtils soundManager = SoundUtils();
 
   bool _isDark = false;
   bool _soundOn = true;

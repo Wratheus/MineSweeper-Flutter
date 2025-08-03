@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 
-class SoundManager {
+class SoundUtils {
   bool soundOn = true;
 
   void playEffect(String assetPath) {
