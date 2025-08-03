@@ -8,7 +8,7 @@ import 'package:minesweeper/src/core/models/size.dart';
 /// - закрытые
 /// - открытые
 /// - с флагами
-/// - с отметками после проигрыша (например, `nobomb`)
+/// - с отметками после проигрыша (например, [Cell.mistake]])
 class Flags {
   /// Создаёт карту флагов с начальными значениями [Cell.closed].
   Flags({required this.size}) : map = Matrix(Cell.closed, size: size);
@@ -37,25 +37,25 @@ class Flags {
     }
   }
 
-  /// Отмечает клетку как "здесь не было бомбы" ([Cell.nobomb]),
+  /// Отмечает клетку как "здесь не было бомбы" ([Cell.mistake]),
   /// если игрок ошибочно поставил флаг.
   /// Используется при проигрыше.
-  void markNoBomb(Coord coord) {
+  void markNoMine(Coord coord) {
     if (map.cellByCoord(coord) == Cell.flagged) {
-      map.setCellByCoord(coord, Cell.nobomb);
+      map.setCellByCoord(coord, Cell.mistake);
     }
   }
 
-  /// Помечает клетку как подорванную бомбу ([Cell.bombed]).
+  /// Помечает клетку как подорванную бомбу ([Cell.exploded]).
   /// Используется для выделения той мины, на которую кликнул игрок.
-  void detonateBomb(Coord coord) {
-    map.setCellByCoord(coord, Cell.bombed);
+  void detonateMine(Coord coord) {
+    map.setCellByCoord(coord, Cell.exploded);
   }
 
   /// Показывает мину на поле, если она была закрыта.
   /// (Меняет состояние на [Cell.opened]).
   /// Вызывается при проигрыше для раскрытия всех мин.
-  void revealBomb(Coord coord) {
+  void revealMine(Coord coord) {
     if (map.cellByCoord(coord) == Cell.closed) {
       map.setCellByCoord(coord, Cell.opened);
     }

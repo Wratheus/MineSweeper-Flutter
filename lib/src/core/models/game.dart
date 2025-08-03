@@ -1,4 +1,4 @@
-import 'package:minesweeper/src/core/models/bombs.dart';
+import 'package:minesweeper/src/core/models/mines.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
@@ -15,12 +15,12 @@ enum GameState { start, playing, lose, win }
 class Game {
   /// Создаёт новую игру с указанным уровнем сложности [difficulty].
   Game({required this.difficulty})
-    : bomb = Bombs(bombsCount: difficulty.mines, size: difficulty.size),
+    : mine = Mines(mineCount: difficulty.mines, size: difficulty.size),
       flag = Flags(size: difficulty.size),
       _checked = List.filled(difficulty.size.squareSize, false);
 
   /// Карта бомб (нижний уровень — где находятся мины).
-  final Bombs bomb;
+  final Mines mine;
 
   /// Карта флагов (верхний уровень — видимое состояние клеток).
   final Flags flag;
@@ -51,7 +51,7 @@ class Game {
     }
 
     if (cellByCoord == Cell.opened) {
-      return bomb.cellByCoord(coord)!;
+      return mine.cellByCoord(coord)!;
     } else {
       return flag.get(coord)!;
     }
@@ -68,11 +68,11 @@ class Game {
         if (!_isChecked(neighbor) && flag.get(neighbor) != Cell.flagged) {
           _setChecked(neighbor);
 
-          final Cell bombCell = bomb.cellByCoord(neighbor)!;
-          if (bombCell != Cell.bomb) {
+          final Cell cellOnMinesMap = mine.cellByCoord(neighbor)!;
+          if (cellOnMinesMap != Cell.mine) {
             flag.openCell(neighbor);
 
-            if (bombCell == Cell.zero) {
+            if (cellOnMinesMap == Cell.zero) {
               queue.add(neighbor);
             }
           }
@@ -89,7 +89,7 @@ class Game {
   void openCell(Coord coord) {
     switch (state) {
       case GameState.start:
-        if (bomb.cellByCoord(coord) != Cell.bomb) {
+        if (mine.cellByCoord(coord) != Cell.mine) {
           flag.openCell(coord);
           _setChecked(coord);
         }
@@ -100,8 +100,8 @@ class Game {
           _chordIfFlagsMatch(coord);
         }
         if (flag.get(coord) == Cell.closed) {
-          switch (bomb.cellByCoord(coord)) {
-            case Cell.bomb:
+          switch (mine.cellByCoord(coord)) {
+            case Cell.mine:
               _lose(coord);
             case Cell.zero:
               flag.openCell(coord);
@@ -121,8 +121,8 @@ class Game {
   /// Chording: автоматическое открытие соседних клеток,
   /// если число флагов вокруг равно числу на клетке.
   void _chordIfFlagsMatch(Coord coord) {
-    if (bomb.cellByCoord(coord) != Cell.bomb) {
-      if (flag.countFlagCellsAround(coord) == bomb.cellByCoord(coord)!.index) {
+    if (mine.cellByCoord(coord) != Cell.mine) {
+      if (flag.countFlagCellsAround(coord) == mine.cellByCoord(coord)!.index) {
         coord.forEachNeighbor(difficulty.size, (around) {
           if (flag.get(around) == Cell.closed) {
             openCell(around);
@@ -139,22 +139,22 @@ class Game {
   @Deprecated('user [_lose()] method')
   // TODO(Aleksandr): will be removed.
   // ignore: unused_element
-  void _loseWithDetonation(Coord bombClicked) {
+  void _loseWithDetonation(Coord mineClicked) {
     _state = GameState.lose;
     for (int x = 0; x < difficulty.size.width; x++) {
       for (int y = 0; y < difficulty.size.height; y++) {
         final Coord coord = Coord(x, y);
-        if (bomb.cellByCoord(coord) == Cell.bomb) {
-          flag.revealBomb(coord);
+        if (mine.cellByCoord(coord) == Cell.mine) {
+          flag.revealMine(coord);
         } else {
-          flag.markNoBomb(coord);
+          flag.markNoMine(coord);
         }
       }
     }
-    flag.detonateBomb(bombClicked);
+    flag.detonateMine(mineClicked);
   }
 
-  void _lose(Coord bombClicked) => _state = GameState.lose;
+  void _lose(Coord mineClicked) => _state = GameState.lose;
 
   /// Проверяет победу:
   /// Если количество открытых клеток равно количеству мин, ставим [GameState.win].
@@ -172,9 +172,9 @@ class Game {
       }
 
       final int totalCells = difficulty.size.squareSize;
-      final int nonBombCells = totalCells - bomb.bombsCount;
+      final int nonMineCells = totalCells - mine.mineCount;
 
-      if (openedCells == nonBombCells) {
+      if (openedCells == nonMineCells) {
         _state = GameState.win;
       }
     }

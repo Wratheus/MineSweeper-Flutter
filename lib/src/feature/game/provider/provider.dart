@@ -41,26 +41,26 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _animateLose(Coord bombClicked) async {
+  Future<void> _animateLose(Coord mineClicked) async {
     // Собираем список всех мин
     final mines = <Coord>[];
     for (int x = 0; x < _game.difficulty.size.width; x++) {
       for (int y = 0; y < _game.difficulty.size.height; y++) {
         final coord = Coord(x, y);
-        if (_game.bomb.cellByCoord(coord) == Cell.bomb) {
+        if (_game.mine.cellByCoord(coord) == Cell.mine) {
           mines.add(coord);
         }
       }
     }
 
     // Сначала взорванная мина
-    _game.flag.detonateBomb(bombClicked);
+    _game.flag.detonateMine(mineClicked);
     notifyListeners();
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
     // Потом остальные
-    for (final coord in mines.where((c) => c != bombClicked)) {
-      _game.flag.revealBomb(coord);
+    for (final coord in mines.where((c) => c != mineClicked)) {
+      _game.flag.revealMine(coord);
       notifyListeners();
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }

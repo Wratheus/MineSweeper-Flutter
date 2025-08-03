@@ -14,7 +14,7 @@ enum Cell {
   num8(imagePath: 'assets/img/num8.png'),
 
   /// Мина (закрытая, пока игрок не проиграл).
-  bomb(imagePath: 'assets/img/bomb.png'),
+  mine(imagePath: 'assets/img/mine.png'),
 
   /// Открытая пустая ячейка (фон без цифр).
   opened(imagePath: 'assets/img/opened.png'),
@@ -26,10 +26,10 @@ enum Cell {
   flagged(imagePath: 'assets/img/flagged.png'),
 
   /// Взорванная мина (та, на которую кликнул игрок при проигрыше).
-  bombed(imagePath: 'assets/img/bombed.png'),
+  exploded(imagePath: 'assets/img/exploded.png'),
 
   /// Ошибочный флаг (когда игрок поставил флаг на не-минe).
-  nobomb(imagePath: 'assets/img/nobomb.png');
+  mistake(imagePath: 'assets/img/mistake.png');
 
   /// Конструктор для каждой ячейки, связывающий её с путем к изображению.
   const Cell({required this.imagePath});
@@ -45,7 +45,7 @@ enum Cell {
   /// - [num1] → [num2]
   /// ...
   ///
-  /// Если попытаться вызвать для [bomb], [opened], [closed] и т.д.,
+  /// Если попытаться вызвать для [mine], [opened], [closed] и т.д.,
   /// выбросит [StateError].
   Cell getNextNum() => switch (this) {
     Cell.zero => Cell.num1,
