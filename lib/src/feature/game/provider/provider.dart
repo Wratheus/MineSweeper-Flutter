@@ -86,6 +86,12 @@ class GameProvider extends ChangeNotifier {
       mineToDetonate = unflaggedMines.first;
     }
 
+    // Помечаем ошибочные флаги
+    for (final coord in mistakes) {
+      _game.flag.markNoMine(coord);
+      notifyListeners();
+    }
+
     // Детонируем выбранную мину
     _game.flag.detonateMine(mineToDetonate);
     notifyListeners();
@@ -101,13 +107,6 @@ class GameProvider extends ChangeNotifier {
 
       notifyListeners();
       await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
-
-    // Помечаем ошибочные флаги
-    for (final coord in mistakes) {
-      _game.flag.markNoMine(coord);
-      notifyListeners();
-      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
   }
 

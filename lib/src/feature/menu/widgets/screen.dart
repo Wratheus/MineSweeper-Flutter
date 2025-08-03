@@ -55,7 +55,7 @@ class MenuScreen extends StatelessWidget {
                 Icon(Icons.grid_3x3, size: 80, color: colorScheme.onPrimary),
                 const SizedBox(height: 16),
                 Text(
-                  'Minesweeper',
+                  'minesweeper',
                   style: theme.textTheme.headlineLarge?.copyWith(
                     color: colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
@@ -77,21 +77,21 @@ class MenuScreen extends StatelessWidget {
                           context,
                           Difficulty.beginner,
                           '😄 Beginner',
-                          'Easy start for newcomers',
+                          'Easy start',
                         ),
                         const SizedBox(height: 15),
                         _buildDifficultyCard(
                           context,
                           Difficulty.intermediate,
                           '🥸 Intermediate',
-                          'For experienced players',
+                          'For experienced',
                         ),
                         const SizedBox(height: 15),
                         _buildDifficultyCard(
                           context,
                           Difficulty.expert,
                           '💀 Expert',
-                          'Only for the brave!',
+                          'Only for the brave',
                         ),
                       ],
                     ),
@@ -154,13 +154,16 @@ class MenuScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 20,
             children: [
               Text(title, style: theme.textTheme.titleLarge),
-              const Spacer(),
-              Text(
-                subtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+              Flexible(
+                child: Text(
+                  subtitle,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],

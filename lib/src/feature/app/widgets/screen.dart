@@ -26,7 +26,7 @@ class _AppScreenState extends State<AppScreen> {
   Widget build(BuildContext context) => Consumer<AppProvider>(
     builder: (context, appProvider, _) => MaterialApp(
       navigatorObservers: [routeObserver],
-      title: 'Minesweeper',
+      title: 'minesweeper',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

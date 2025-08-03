@@ -52,7 +52,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
           child: Confetti(
             game: game,
             child: Padding(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 children: [
                   Padding(
@@ -79,8 +79,13 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Flexible(
+                  ColoredBox(
+                    color: context.read<AppProvider>().isDark
+                        ? Colors.white30
+                        : Colors.transparent,
                     child: GridView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: cols,
@@ -111,7 +116,6 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                               child: Image.asset(
                                 cell.imagePath,
                                 fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
                               ),
                             ),
                           ),
@@ -138,7 +142,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
 
   Color? _getCellBackgroundColor(BuildContext context, Cell cell) =>
       switch (cell) {
-        Cell.flagged => Theme.of(context).canvasColor,
+        Cell.flagged => Colors.green.shade200,
         Cell.exploded => Colors.red.shade300,
         _ => null,
       };
