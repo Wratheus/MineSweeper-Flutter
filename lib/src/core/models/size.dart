@@ -14,4 +14,7 @@ final class BoardSize {
 
   /// Возвращает общее количество клеток на поле (width * height).
   int get squareSize => width * height;
+
+  @override
+  String toString() => '${width}x$height';
 }

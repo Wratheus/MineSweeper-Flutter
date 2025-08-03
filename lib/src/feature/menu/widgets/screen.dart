@@ -10,7 +10,7 @@ class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
   void _startGame(BuildContext context, Difficulty difficulty) {
-    _updateWindowSize(difficulty);
+    _updateWindowSize(context, difficulty);
     Navigator.push(
       context,
       PageRouteBuilder<Object?>(
@@ -32,26 +32,24 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _updateWindowSize(Difficulty difficulty) async {
-    final double cellSize = switch(difficulty) {
-      Difficulty.beginner => 50,
-      Difficulty.intermediate => 40,
-      Difficulty.expert => 30,
-    };
+  Future<void> _updateWindowSize(
+    BuildContext context,
+    Difficulty difficulty,
+  ) async {
+    final double availableWidth = MediaQuery.of(context).size.width - 36;
+    final double cellSize = (availableWidth / difficulty.size.width).clamp(
+      20,
+      50,
+    );
 
-    const double horizontalPadding = 32;
-    const double appBarHeight = 56; // Стандартная высота AppBar
-    const double verticalPadding = 120 + appBarHeight;
+    const double verticalPadding = 120 + 35;
 
     const double spacing = 1;
 
     final double totalSpacingWidth = difficulty.size.width * spacing;
     final double totalSpacingHeight = difficulty.size.height * spacing;
 
-    final double width =
-        difficulty.size.width * cellSize +
-        horizontalPadding +
-        totalSpacingWidth;
+    final double width = difficulty.size.width * cellSize + totalSpacingWidth;
     final double height =
         difficulty.size.height * cellSize +
         verticalPadding +
@@ -113,26 +111,31 @@ class MenuScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 15,
                       children: [
                         _buildDifficultyCard(
                           context,
                           Difficulty.beginner,
                           '😄 Beginner',
-                          'Easy start',
+                          'Easy start\n${Difficulty.beginner.size}, ${Difficulty.beginner.mines} mines',
                         ),
-                        const SizedBox(height: 15),
                         _buildDifficultyCard(
                           context,
                           Difficulty.intermediate,
                           '🥸 Intermediate',
-                          'For experienced',
+                          'For experienced\n${Difficulty.intermediate.size}, ${Difficulty.intermediate.mines} mines',
                         ),
-                        const SizedBox(height: 15),
                         _buildDifficultyCard(
                           context,
                           Difficulty.expert,
                           '💀 Expert',
-                          'Only for the brave',
+                          'Only for the brave\n${Difficulty.expert.size}, ${Difficulty.expert.mines} mines',
+                        ),
+                        _buildDifficultyCard(
+                          context,
+                          Difficulty.deadEnd,
+                          '☠️ Dead-end',
+                          'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
                         ),
                       ],
                     ),

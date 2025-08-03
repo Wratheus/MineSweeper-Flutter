@@ -15,7 +15,10 @@ enum Difficulty {
   intermediate(size: BoardSize(16, 16), mines: 40),
 
   /// Эксперт: 30x16 клеток, 99 мин.
-  expert(size: BoardSize(30, 16), mines: 99);
+  expert(size: BoardSize(30, 16), mines: 99),
+
+  /// Эксперементальный-непроходимый: 30x30 клеток,   80 мин.
+  deadEnd(size: BoardSize(40, 25), mines: 150);
 
   /// Конструктор для инициализации параметров уровня сложности.
   const Difficulty({required this.size, required this.mines});

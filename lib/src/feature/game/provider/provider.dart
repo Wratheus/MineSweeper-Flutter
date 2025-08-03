@@ -8,12 +8,13 @@ import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:provider/provider.dart';
 
 class GameProvider extends ChangeNotifier {
-  GameProvider({Difficulty difficulty = Difficulty.beginner}) {
+  GameProvider({this.difficulty = Difficulty.beginner}) {
     _game = Game(difficulty: difficulty);
     _ticker = Ticker(_onTick)..start();
   }
 
   late Game _game;
+  final Difficulty difficulty;
   int _secondsElapsed = 0;
   final Stopwatch _stopwatch = Stopwatch();
   late final Ticker _ticker;
@@ -63,7 +64,6 @@ class GameProvider extends ChangeNotifier {
         // Пользователь не дождался анимации
         if (currentSession != _sessionId) return;
 
-
         final coord = Coord(x, y);
         final isMine = _game.mine.cellByCoord(coord) == Cell.mine;
         final isFlagged = _game.flag.get(coord) == Cell.flagged;
@@ -103,25 +103,40 @@ class GameProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    const int explosionDelayMs = 275;
+    final int explosionDelayMs = switch (_game.difficulty) {
+      Difficulty.beginner => 230,
+      Difficulty.intermediate => 215,
+      Difficulty.expert => 200,
+      Difficulty.deadEnd => 100,
+    };
+
     // Детонируем выбранную мину
     _game.flag.detonateMine(mineToDetonate);
     notifyListeners();
     context.read<AppProvider>().soundManager.playExplosion();
-    await Future<void>.delayed(const Duration(milliseconds: explosionDelayMs));
+    await Future<void>.delayed(Duration(milliseconds: explosionDelayMs));
 
-    // Показываем остальные мины
-    for (final coord in mines.where((c) => c != mineToDetonate)) {
-      if (currentSession != _sessionId) return;
-      _game.flag.revealMine(coord);
+    final groupedMines = <int, List<Coord>>{};
+
+    for (final mine in mines.where((c) => c != mineToDetonate)) {
+      final distance =
+          (mine.x - mineToDetonate.x).abs() + (mine.y - mineToDetonate.y).abs();
+      groupedMines.putIfAbsent(distance, () => []).add(mine);
+    }
+
+    // Сортируем по ключам (расстояние) для взрывной волны
+    final sortedDistances = groupedMines.keys.toList()..sort();
+
+    for (final distance in sortedDistances) {
+      for (final coord in groupedMines[distance]!) {
+        if (currentSession != _sessionId) return;
+        _game.flag.revealMine(coord);
+      }
+      notifyListeners();
       if (context.mounted) {
         context.read<AppProvider>().soundManager.playExplosion();
       }
-
-      notifyListeners();
-      await Future<void>.delayed(
-        const Duration(milliseconds: explosionDelayMs),
-      );
+      await Future<void>.delayed(Duration(milliseconds: explosionDelayMs));
     }
   }
 
