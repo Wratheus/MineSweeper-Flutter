@@ -47,7 +47,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   void updateRecord(int newRecord) {
-    if (newRecord > _record) {
+    if (newRecord < _record || _record == 0) {
       _record = newRecord;
       saveSettings();
       notifyListeners();

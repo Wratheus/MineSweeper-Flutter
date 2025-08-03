@@ -34,6 +34,8 @@ class MenuScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final record = context.watch<AppProvider>().record;
+
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -46,8 +48,9 @@ class MenuScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: SafeArea(
+        child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _buildAppBar(context),
               const SizedBox(height: 50),
@@ -60,11 +63,26 @@ class MenuScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
+              if (record > 0) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Your best record: $record',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onPrimary.withValues(alpha: 0.85),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 30),
-              Expanded(
+              SafeArea(
+                top: false,
+                minimum: const EdgeInsets.only(bottom: kToolbarHeight),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildDifficultyCard(
