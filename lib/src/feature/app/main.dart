@@ -9,6 +9,6 @@ class AppMain extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider(
     create: (context) => AppProvider(),
-    child: const AppScreen(),
+    child: AppScreen(),
   );
 }

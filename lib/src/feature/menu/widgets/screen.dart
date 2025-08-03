@@ -6,29 +6,30 @@ import 'package:minesweeper/src/feature/game/widgets/screen.dart';
 import 'package:provider/provider.dart';
 
 class MenuScreen extends StatelessWidget {
-  const MenuScreen({super.key});
+  const MenuScreen({required this.routeObserver, super.key});
 
-  void _startGame(BuildContext context, Difficulty difficulty) {
-    Navigator.push(
-      context,
-      PageRouteBuilder<Object?>(
-        pageBuilder: (_, _, _) => ChangeNotifierProvider(
-          create: (_) => GameProvider()..newGame(difficulty),
-          child: const MinesweeperGameplayScreen(),
+  final RouteObserver routeObserver;
+
+  void _startGame(BuildContext context, Difficulty difficulty) =>
+      Navigator.push(
+        context,
+        PageRouteBuilder<Object?>(
+          pageBuilder: (_, _, _) => ChangeNotifierProvider(
+            create: (_) => GameProvider()..newGame(difficulty),
+            child: const MinesweeperGameplayScreen(),
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final tween = Tween(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final tween = Tween(
-            begin: const Offset(0, 1),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeInOut));
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      ),
-    );
-  }
+      );
 
   @override
   Widget build(BuildContext context) {

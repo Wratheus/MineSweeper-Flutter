@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
+import 'package:minesweeper/src/core/utils/sounds.dart';
 
 class GameProvider extends ChangeNotifier {
   GameProvider({Difficulty difficulty = Difficulty.beginner}) {
@@ -23,26 +24,29 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
-  void onLeftClick(Coord coord) {
+  void onLeftClick(BuildContext context, Coord coord) {
     if (_game.state == GameState.start || _game.state == GameState.playing) {
       if (_game.state == GameState.start) {
         _stopwatch.start();
       }
+      SoundManager().playDig();
       _game.openCell(coord);
       if (_game.state == GameState.lose) {
         _stopwatch.stop();
-        _animateLose(coord);
+        _animateLose(context, coord);
         return;
       }
       if (_game.state == GameState.win) {
+        SoundManager().playWin(context);
         _stopwatch.stop();
       }
       notifyListeners();
     }
   }
 
-  Future<void> _animateLose(Coord mineClicked) async {
+  Future<void> _animateLose(BuildContext context, Coord mineClicked) async {
     // Собираем список всех мин
+    await SoundManager().playExplosion(context);
     final mines = <Coord>[];
     for (int x = 0; x < _game.difficulty.size.width; x++) {
       for (int y = 0; y < _game.difficulty.size.height; y++) {
@@ -75,7 +79,8 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onRightClick(Coord coord) {
+  void onRightClick(BuildContext context, Coord coord) {
+    SoundManager().playFlag(context);
     if (_game.state == GameState.playing) {
       _game.flag.toggleFlag(coord);
       notifyListeners();

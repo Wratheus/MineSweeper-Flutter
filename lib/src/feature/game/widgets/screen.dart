@@ -38,9 +38,12 @@ class MinesweeperGameplayScreen extends StatelessWidget {
               ),
               onPressed: () => context.read<AppProvider>().toggleTheme(),
             ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () => controller.newGame(game.difficulty),
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () => controller.newGame(game.difficulty),
+              ),
             ),
           ],
         ),
@@ -92,9 +95,11 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                         final Cell cell = game.getCell(coord);
 
                         return GestureDetector(
-                          onTap: () => controller.onLeftClick(coord),
-                          onLongPress: () => controller.onRightClick(coord),
-                          onSecondaryTap: () => controller.onRightClick(coord),
+                          onTap: () => controller.onLeftClick(context, coord),
+                          onLongPress: () =>
+                              controller.onRightClick(context, coord),
+                          onSecondaryTap: () =>
+                              controller.onRightClick(context, coord),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
                             decoration: BoxDecoration(
