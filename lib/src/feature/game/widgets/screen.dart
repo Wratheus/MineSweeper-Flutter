@@ -1,200 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:minesweeper/src/core/models/cell.dart';
 import 'package:minesweeper/src/core/models/coord.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/models/game.dart';
+import 'package:minesweeper/src/feature/game/provider.dart';
+import 'package:minesweeper/src/feature/game/widgets/confetti.dart';
 import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
-import 'package:window_size/window_size.dart';
+import 'package:provider/provider.dart';
 
-class MinesweeperGameplayScreen extends StatefulWidget {
+class MinesweeperGameplayScreen extends StatelessWidget {
   const MinesweeperGameplayScreen({super.key});
 
   @override
-  State<MinesweeperGameplayScreen> createState() =>
-      _MinesweeperGameplayScreenState();
-}
+  Widget build(BuildContext context) => Consumer<GameProvider>(
+    builder: (context, controller, _) {
+      final game = controller.game;
+      final cols = game.difficulty.size.width;
+      final rows = game.difficulty.size.height;
 
-class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
-  late Game game;
-  Difficulty selectedDifficulty = Difficulty.beginner;
-  int secondsElapsed = 0;
-  late final Stopwatch stopwatch;
-  late final Ticker ticker;
-
-  @override
-  void initState() {
-    super.initState();
-    game = Game(difficulty: selectedDifficulty);
-    _updateWindowSize();
-    stopwatch = Stopwatch();
-    ticker = Ticker((_) {
-      if (stopwatch.isRunning) {
-        setState(() {
-          secondsElapsed = stopwatch.elapsed.inSeconds;
-        });
-      }
-    });
-    ticker.start();
-  }
-
-  @override
-  void dispose() {
-    ticker.dispose();
-    super.dispose();
-  }
-
-  void _startNewGame() {
-    setState(() {
-      game = Game(difficulty: selectedDifficulty);
-      _updateWindowSize();
-      stopwatch
-        ..reset()
-        ..start();
-      secondsElapsed = 0;
-    });
-  }
-
-  void _onLeftClick(Coord coord) {
-    if (game.state == GameState.playing || game.state == GameState.start) {
-      if (game.state == GameState.start) {
-        stopwatch
-          ..reset()
-          ..start();
-      }
-      setState(() {
-        game.openCell(coord);
-        if (game.state == GameState.win || game.state == GameState.lose) {
-          stopwatch.stop();
-        }
-      });
-    }
-  }
-
-  void _onRightClick(Coord coord) {
-    if (game.state == GameState.playing) {
-      setState(() => game.flag.toggleFlag(coord));
-    }
-  }
-
-  Future<void> _updateWindowSize() async {
-    const double cellSize = 32;
-    const double horizontalPadding = 32;
-    const double appBarHeight = 56; // Стандартная высота AppBar
-    const double verticalPadding = 120 + appBarHeight;
-
-    const double spacing = 1;
-
-    final double totalSpacingWidth = (game.difficulty.size.width - 1) * spacing;
-    final double totalSpacingHeight =
-        (game.difficulty.size.height - 1) * spacing;
-
-    final double width =
-        game.difficulty.size.width * cellSize +
-        horizontalPadding +
-        totalSpacingWidth;
-    final double height =
-        game.difficulty.size.height * cellSize +
-        verticalPadding +
-        totalSpacingHeight;
-
-    final Screen? screen = await getCurrentScreen();
-    if (screen == null) return;
-
-    setWindowFrame(
-      Rect.fromLTWH(
-        (screen.frame.width - width) / 2,
-        (screen.frame.height - height) / 2,
-        width,
-        height,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final int cols = game.difficulty.size.width;
-    final int rows = game.difficulty.size.height;
-
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          _buildDifficultySelector(),
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
+      return Scaffold(
+        appBar: AppBar(
+          actions: [
+            _buildDifficultySelector(controller),
+            IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: _startNewGame,
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  StatusItem(
-                    icon: Icons.flag,
-                    text: '${game.countFlags} / ${game.difficulty.mines}',
-                  ),
-                  StatusItem(icon: Icons.timer, text: '${secondsElapsed}s'),
-                  StatusItem(
-                    icon: Icons.info,
-                    text: game.state.name.toUpperCase(),
-                    color: _getStateColor(game.state),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols,
-                  mainAxisSpacing: 1,
-                  crossAxisSpacing: 1,
-                ),
-                itemCount: rows * cols,
-                itemBuilder: (context, index) {
-                  final int x = index % cols;
-                  final int y = index ~/ cols;
-                  final Coord coord = Coord(x, y);
-                  final Cell cell = game.getCell(coord);
-
-                  return GestureDetector(
-                    onTap: () => _onLeftClick(coord),
-                    onLongPress: () => _onRightClick(coord),
-                    onSecondaryTap: () => _onRightClick(coord),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      decoration: BoxDecoration(
-                        color: _getCellBackgroundColor(cell),
-                        border: Border.all(color: Colors.grey.shade400),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(1.5),
-                        child: Image.asset(cell.imagePath, fit: BoxFit.contain),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              onPressed: () => controller.newGame(game.difficulty),
             ),
           ],
         ),
-      ),
-    );
-  }
+        body: CustomConfettiWidget(
+          game: game,
+          child: Padding(
+            padding: const EdgeInsets.all(5),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      StatusItem(
+                        icon: Icons.flag,
+                        text: '${game.countFlags} / ${game.difficulty.mines}',
+                      ),
+                      StatusItem(
+                        icon: Icons.timer,
+                        text: '${controller.secondsElapsed}s',
+                      ),
+                      StatusItem(
+                        icon: Icons.info,
+                        text: game.state.name.toUpperCase(),
+                        color: _getStateColor(game.state),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: cols,
+                      mainAxisSpacing: 1,
+                      crossAxisSpacing: 1,
+                    ),
+                    itemCount: rows * cols,
+                    itemBuilder: (context, index) {
+                      final int x = index % cols;
+                      final int y = index ~/ cols;
+                      final Coord coord = Coord(x, y);
+                      final Cell cell = game.getCell(coord);
 
-  Widget _buildDifficultySelector() => Padding(
+                      return GestureDetector(
+                        onTap: () => controller.onLeftClick(coord),
+                        onLongPress: () => controller.onRightClick(coord),
+                        onSecondaryTap: () => controller.onRightClick(coord),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          decoration: BoxDecoration(
+                            color: _getCellBackgroundColor(cell),
+                            border: Border.all(color: Colors.grey.shade400),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(1.5),
+                            child: Image.asset(
+                              cell.imagePath,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  Widget _buildDifficultySelector(GameProvider controller) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8),
     child: DropdownButton<Difficulty>(
-      value: selectedDifficulty,
+      value: controller.game.difficulty,
       underline: const SizedBox.shrink(),
       padding: const EdgeInsets.all(5),
       borderRadius: BorderRadius.circular(5),
@@ -218,11 +130,8 @@ class _MinesweeperGameplayScreenState extends State<MinesweeperGameplayScreen> {
           )
           .toList(),
       onChanged: (difficulty) {
-        if (difficulty != null) {
-          setState(() {
-            selectedDifficulty = difficulty;
-            _startNewGame();
-          });
+        if (difficulty != null && difficulty != controller.game.difficulty) {
+          controller.newGame(difficulty);
         }
       },
     ),

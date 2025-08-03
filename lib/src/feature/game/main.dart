@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:minesweeper/src/feature/game/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/screen.dart';
+import 'package:provider/provider.dart';
 
 class MineSweeperGamePlayMain extends StatelessWidget {
   const MineSweeperGamePlayMain({super.key});
 
   @override
-  Widget build(BuildContext context) => const MinesweeperGameplayScreen();
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+    create: (_) => GameProvider(),
+    child: const MinesweeperGameplayScreen(),
+  );
 }
