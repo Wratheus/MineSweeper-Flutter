@@ -7,20 +7,16 @@ class AppProvider extends ChangeNotifier {
 
   bool _isDark = false;
   bool _soundOn = true;
-  int _record = 0;
 
   bool get isDark => _isDark;
 
   bool get soundOn => _soundOn;
-
-  int get record => _record;
 
   // Загрузка настроек из SharedPreferences
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _isDark = prefs.getBool('isDark') ?? false;
     _soundOn = prefs.getBool('soundOn') ?? true;
-    _record = prefs.getInt('record') ?? 0;
     soundManager.soundOn = _soundOn;
     notifyListeners();
   }
@@ -30,7 +26,6 @@ class AppProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDark', _isDark);
     await prefs.setBool('soundOn', _soundOn);
-    await prefs.setInt('record', _record);
   }
 
   void toggleTheme() {
@@ -44,13 +39,5 @@ class AppProvider extends ChangeNotifier {
     soundManager.soundOn = _soundOn;
     saveSettings();
     notifyListeners();
-  }
-
-  void updateRecord(int newRecord) {
-    if (newRecord < _record || _record == 0) {
-      _record = newRecord;
-      saveSettings();
-      notifyListeners();
-    }
   }
 }

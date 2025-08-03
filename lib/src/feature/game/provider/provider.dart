@@ -43,8 +43,6 @@ class GameProvider extends ChangeNotifier {
       if (_game.state == GameState.win) {
         context.read<AppProvider>().soundManager.playWin();
         _stopwatch.stop();
-        final int elapsed = _stopwatch.elapsed.inSeconds;
-        context.read<AppProvider>().updateRecord(elapsed);
       }
       notifyListeners();
     }
