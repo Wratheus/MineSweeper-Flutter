@@ -91,13 +91,13 @@ jobs:
 
           mkdir -p AppDir/usr/share/applications
           cat <<EOF > AppDir/usr/share/applications/minesweeper.desktop
-[Desktop Entry]
-Name=Minesweeper
-Exec=minesweeper
-Type=Application
-Categories=Game;
-Terminal=false
-EOF
+          [Desktop Entry]
+          Name=Minesweeper
+          Exec=minesweeper
+          Type=Application
+          Categories=Game;
+          Terminal=false
+          EOF
 
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
