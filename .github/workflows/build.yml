@@ -25,12 +25,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      # ✅ Устанавливаем Flutter одинаково для всех OS
       - name: Install Flutter
         shell: bash
         run: |
           git clone https://github.com/flutter/flutter.git --branch 3.32.8 --depth 1 $HOME/flutter
           echo "$HOME/flutter/bin" >> $GITHUB_PATH
 
+      # ✅ Проверка, что Flutter доступен
       - name: Check Flutter version
         run: flutter --version
         shell: bash
@@ -81,37 +83,18 @@ jobs:
         run: mkdir artifacts
         shell: bash
 
-      - name: Package AppImage (Linux only)
-        if: matrix.flutter-target == 'linux'
-        shell: bash
-        run: |
-          mkdir -p AppDir/usr/bin
-          cp build/linux/x64/release/bundle/minesweeper AppDir/usr/bin/
-          cp -r build/linux/x64/release/bundle/lib AppDir/usr/ || true
-
-          mkdir -p AppDir/usr/share/applications
-          cat <<EOF > AppDir/usr/share/applications/minesweeper.desktop
-          [Desktop Entry]
-          Name=Minesweeper
-          Exec=minesweeper
-          Type=Application
-          Categories=Game;
-          Terminal=false
-          EOF
-
-          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
-
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
-
-          mv *.AppImage artifacts/minesweeper-linux-${GITHUB_REF_NAME}.AppImage
-
       - name: Archive build (Windows)
         if: matrix.flutter-target == 'windows'
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath artifacts/minesweeper-windows-$tag.zip
+
+      - name: Archive build (Linux)
+        if: matrix.flutter-target == 'linux'
+        run: |
+          tar -czvf artifacts/minesweeper-linux-${{ github.ref_name }}.tar.gz -C build/linux/x64/release/bundle .
+        shell: bash
 
       - name: Archive build (macOS)
         if: matrix.flutter-target == 'macos'
