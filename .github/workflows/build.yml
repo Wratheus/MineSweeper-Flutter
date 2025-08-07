@@ -81,7 +81,6 @@ jobs:
         run: mkdir artifacts
         shell: bash
 
-      # Packaging AppImage for Linux
       - name: Package AppImage (Linux only)
         if: matrix.flutter-target == 'linux'
         shell: bash
@@ -91,35 +90,32 @@ jobs:
           cp -r build/linux/x64/release/bundle/flutter_assets AppDir/usr/
           cp -r build/linux/x64/release/bundle/data AppDir/usr/ || true
           cp -r build/linux/x64/release/bundle/lib AppDir/usr/
-
-          mkdir -p AppDir/usr/lib
-          cp AppDir/usr/lib/*.so AppDir/usr/lib/ || true
-
+      
           mkdir -p AppDir/usr/share/applications
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
-          # Create .desktop file
+      
           cat <<EOF > AppDir/usr/share/applications/minesweeper.desktop
-[Desktop Entry]
-Name=Minesweeper
-Exec=minesweeper
-Icon=minesweeper
-Type=Application
-Categories=Game;
-Terminal=false
-EOF
-
-          # Copy icon (make sure assets/icon.png exists)
-          cp assets/img/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/minesweeper.png
-
-          # Download linuxdeploy
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          [Desktop Entry]
+          Name=Minesweeper
+          Exec=minesweeper
+          Icon=minesweeper
+          Type=Application
+          Categories=Game;
+          Terminal=false
+          EOF
+      
+          if [ -f assets/img/icon.png ]; then
+            cp assets/img/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/minesweeper.png
+          else
+            echo "Warning: icon.png not found!"
+          fi
+      
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
-
-          # Build AppImage
+      
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
-
-          mv *.AppImage artifacts/minesweeper-linux-${{ github.ref_name }}.AppImage
+      
+          mv *.AppImage artifacts/minesweeper-linux-${GITHUB_REF_NAME}.AppImage
 
       # Archive Windows build as ZIP
       - name: Archive build (Windows)
