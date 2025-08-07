@@ -110,7 +110,7 @@ Terminal=false
 EOF
 
           # Copy icon (make sure assets/icon.png exists)
-          cp assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/minesweeper.png
+          cp assets/img/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/minesweeper.png
 
           # Download linuxdeploy
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
