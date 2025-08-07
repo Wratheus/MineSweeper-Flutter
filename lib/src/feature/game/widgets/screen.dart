@@ -85,48 +85,34 @@ class MinesweeperGameplayScreen extends StatelessWidget {
                       color: context.read<AppProvider>().isDark
                           ? Colors.white30
                           : Colors.transparent,
-                      child: InteractiveViewer(
-                        minScale: 0.5,
-                        child: GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: cols,
-                                mainAxisSpacing: 1,
-                                crossAxisSpacing: 1,
-                              ),
-                          itemCount: rows * cols,
-                          itemBuilder: (context, index) {
-                            final int x = index % cols;
-                            final int y = index ~/ cols;
-                            final Coord coord = Coord(x, y);
-                            final Cell cell = game.getCell(coord);
-
-                            return GestureDetector(
-                              onTap: () =>
-                                  controller.onLeftClick(context, coord),
-                              onLongPress: () =>
-                                  controller.onRightClick(context, coord),
-                              onSecondaryTap: () =>
-                                  controller.onRightClick(context, coord),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                decoration: BoxDecoration(
-                                  color: _getCellBackgroundColor(context, cell),
-                                  border: Border.all(
-                                    color: Colors.grey.shade400,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(1.5),
-                                  child: Image.asset(
-                                    cell.imagePath,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: cols,
+                          mainAxisSpacing: 1,
+                          crossAxisSpacing: 1,
                         ),
+                        itemCount: rows * cols,
+                        itemBuilder: (context, index) {
+                          final int x = index % cols;
+                          final int y = index ~/ cols;
+                          final Coord coord = Coord(x, y);
+                          final Cell cell = game.getCell(coord);
+
+                          return GestureDetector(
+                            onTap: () => controller.onLeftClick(context, coord),
+                            onLongPress: () =>
+                                controller.onRightClick(context, coord),
+                            onSecondaryTap: () =>
+                                controller.onRightClick(context, coord),
+                            child: Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Image.asset(
+                                cell.imagePath,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -145,11 +131,5 @@ class MinesweeperGameplayScreen extends StatelessWidget {
         GameState.lose => Colors.red,
         GameState.playing => Colors.orange,
         GameState.start => IconTheme.of(context).color!,
-      };
-
-  Color? _getCellBackgroundColor(BuildContext context, Cell cell) =>
-      switch (cell) {
-        Cell.exploded => Colors.red.shade300,
-        _ => null,
       };
 }

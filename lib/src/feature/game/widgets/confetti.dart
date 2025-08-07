@@ -34,13 +34,16 @@ class _ConfettiState extends State<Confetti> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
     if (widget.game.state == GameState.win &&
         confettiController.state != ConfettiControllerState.playing) {
       confettiController.play();
     }
+    super.didChangeDependencies();
+  }
 
-    return Stack(
+  @override
+  Widget build(BuildContext context) => Stack(
       children: [
         widget.child,
         Align(
@@ -61,5 +64,4 @@ class _ConfettiState extends State<Confetti> {
         ),
       ],
     );
-  }
 }
