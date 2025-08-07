@@ -43,19 +43,27 @@ jobs:
         run: flutter pub get
         shell: bash
 
+      - name: Precache Flutter macOS artifacts
+        if: matrix.flutter-target == 'macos'
+        run: flutter precache --macos
+        shell: bash
+
+      - name: Install CocoaPods dependencies
+        if: matrix.flutter-target == 'macos'
+        run: |
+          cd macos
+          pod install --repo-update
+        shell: bash
+
       - name: Install Linux dependencies
         if: matrix.flutter-target == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             clang cmake ninja-build pkg-config libgtk-3-dev \
-            libglib2.0-dev wget patchelf xz-utils \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            gstreamer1.0-alsa \
-            gstreamer1.0-pulseaudio
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+            gstreamer1.0-alsa gstreamer1.0-pulseaudio
         shell: bash
 
       - name: Build app
@@ -73,39 +81,69 @@ jobs:
         run: mkdir artifacts
         shell: bash
 
+      # Packaging AppImage for Linux
       - name: Package AppImage (Linux only)
         if: matrix.flutter-target == 'linux'
         shell: bash
         run: |
           mkdir -p AppDir/usr/bin
           cp build/linux/x64/release/bundle/minesweeper AppDir/usr/bin/
-          cp -r build/linux/x64/release/bundle/* AppDir/usr/
+          cp -r build/linux/x64/release/bundle/flutter_assets AppDir/usr/
+          cp -r build/linux/x64/release/bundle/data AppDir/usr/ || true
+          cp -r build/linux/x64/release/bundle/lib AppDir/usr/
+
+          mkdir -p AppDir/usr/lib
+          cp AppDir/usr/lib/*.so AppDir/usr/lib/ || true
+
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Create .desktop file
+          cat <<EOF > AppDir/usr/share/applications/minesweeper.desktop
+[Desktop Entry]
+Name=Minesweeper
+Exec=minesweeper
+Icon=minesweeper
+Type=Application
+Categories=Game;
+Terminal=false
+EOF
+
+          # Copy icon (make sure assets/icon.png exists)
+          cp assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/minesweeper.png
+
+          # Download linuxdeploy
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
+
+          # Build AppImage
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+
           mv *.AppImage artifacts/minesweeper-linux-${{ github.ref_name }}.AppImage
 
+      # Archive Windows build as ZIP
       - name: Archive build (Windows)
         if: matrix.flutter-target == 'windows'
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
-          Push-Location build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath ../../../artifacts/minesweeper-windows-$tag.zip -Force
-          Pop-Location
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath artifacts/minesweeper-windows-$tag.zip
 
+      # Archive macOS build as tar.gz
       - name: Archive build (macOS)
         if: matrix.flutter-target == 'macos'
         run: |
           tar -czvf artifacts/minesweeper-macos-${{ github.ref_name }}.tar.gz -C build/macos/Build/Products/Release Minesweeper.app
         shell: bash
 
+      # Upload all artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-build
           path: artifacts/*
 
+      # Upload to GitHub Releases on tag push
       - name: Upload to GitHub Releases
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
