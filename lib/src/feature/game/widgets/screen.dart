@@ -47,6 +47,7 @@ class MinesweeperGameplayScreen extends StatelessWidget {
               ),
             ),
           ],
+          
         ),
         body: Shaker(
           animate: controller.game.state == GameState.lose,
