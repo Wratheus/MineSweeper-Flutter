@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/feature/app/main.dart';
 import 'package:window_size/window_size.dart';
@@ -7,7 +8,21 @@ import 'package:window_size/window_size.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (kIsWeb) {
+    // Веб-версия
+    runWebApp();
+  } else {
+    // Десктопная версия
+    await runDesktopApp();
+  }
+}
+
+void runWebApp() {
+  runApp(const AppMain());
+}
+
+Future<void> runDesktopApp() async {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     setWindowTitle('minesweeper');
     setWindowMinSize(const Size(300, 400));
     setWindowMaxSize(Size.infinite);
@@ -21,7 +36,7 @@ void main() async {
     final top = (screen.frame.height - windowHeight) / 2;
 
     setWindowFrame(Rect.fromLTWH(left, top, windowWidth, windowHeight));
-
-    runApp(const AppMain());
   }
+
+  runApp(const AppMain());
 }

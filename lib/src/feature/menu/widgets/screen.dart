@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/utils/window.dart';
@@ -11,7 +12,9 @@ class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
   Future<void> _startGame(BuildContext context, Difficulty difficulty) async {
-    await WindowUtils.updateWindowSize(difficulty);
+    if (!kIsWeb) {
+      await WindowUtils.updateWindowSize(difficulty);
+    }
     if (!context.mounted) return;
     await Navigator.push(
       context,
