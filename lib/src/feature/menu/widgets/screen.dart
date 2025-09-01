@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minesweeper/src/core/models/difficulty.dart';
 import 'package:minesweeper/src/core/utils/window.dart';
+import 'package:minesweeper/src/core/widgets/web_max_width.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/main.dart';
 import 'package:minesweeper/src/feature/menu/widgets/card.dart';
@@ -61,78 +62,84 @@ class MenuScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: CustomScrollView(
-          slivers: [
-            SliverList.list(
-              children: [
-                SafeArea(child: _buildAppBar(context)),
-                const SizedBox(height: 50),
-                Icon(Icons.grid_3x3, size: 80, color: colorScheme.onPrimary),
-                const SizedBox(height: 16),
-                Text(
-                  'minesweeper',
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
+        child: WebMaxWidth(
+          maxWidth: 800,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: CustomScrollView(
+            slivers: [
+              SliverList.list(
+                children: [
+                  SafeArea(child: _buildAppBar(context)),
+                  const SizedBox(height: 50),
+                  Icon(Icons.grid_3x3, size: 80, color: colorScheme.onPrimary),
+                  const SizedBox(height: 16),
+                  Text(
+                    'minesweeper',
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-                SafeArea(
-                  top: false,
-                  minimum: const EdgeInsets.only(bottom: kToolbarHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        DifficultyCard(
-                          difficulty: Difficulty.beginner,
-                          title: '😄 Beginner',
-                          subtitle:
-                              'Easy start\n${Difficulty.beginner.size}, ${Difficulty.beginner.mines} mines',
-                          onTap: () => _startGame(context, Difficulty.beginner),
-                        ),
-                        const SizedBox(height: 15),
-                        DifficultyCard(
-                          difficulty: Difficulty.intermediate,
-                          title: '🥸 Intermediate',
-                          subtitle:
-                              'For experienced\n${Difficulty.intermediate.size}, ${Difficulty.intermediate.mines} mines',
-                          onTap: () =>
-                              _startGame(context, Difficulty.intermediate),
-                        ),
-                        const SizedBox(height: 15),
-                        DifficultyCard(
-                          difficulty: Difficulty.expert,
-                          title: '💀 Expert',
-                          subtitle:
-                              'Only for the brave\n${Difficulty.expert.size}, ${Difficulty.expert.mines} mines',
-                          onTap: () => _startGame(context, Difficulty.expert),
-                        ),
-                        const SizedBox(height: 15),
-                        DifficultyCard(
-                          difficulty: Difficulty.deadEnd,
-                          title: '☠️ Dead-end',
-                          subtitle:
-                              'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
-                          onTap: () => _startGame(context, Difficulty.deadEnd),
-                        ),
-                        const SizedBox(height: 15),
-                        DifficultyCard(
-                          difficulty: null,
-                          title: '🎨 Custom',
-                          subtitle: 'Set your own size and mines',
-                          onTap: () => _showCustomDifficultyDialog(context),
-                        ),
-                      ],
+                  const SizedBox(height: 30),
+                  SafeArea(
+                    top: false,
+                    minimum: const EdgeInsets.only(bottom: kToolbarHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          DifficultyCard(
+                            difficulty: Difficulty.beginner,
+                            title: '😄 Beginner',
+                            subtitle:
+                                'Easy start\n${Difficulty.beginner.size}, ${Difficulty.beginner.mines} mines',
+                            onTap: () =>
+                                _startGame(context, Difficulty.beginner),
+                          ),
+                          const SizedBox(height: 15),
+                          DifficultyCard(
+                            difficulty: Difficulty.intermediate,
+                            title: '🥸 Intermediate',
+                            subtitle:
+                                'For experienced\n${Difficulty.intermediate.size}, ${Difficulty.intermediate.mines} mines',
+                            onTap: () =>
+                                _startGame(context, Difficulty.intermediate),
+                          ),
+                          const SizedBox(height: 15),
+                          DifficultyCard(
+                            difficulty: Difficulty.expert,
+                            title: '💀 Expert',
+                            subtitle:
+                                'Only for the brave\n${Difficulty.expert.size}, ${Difficulty.expert.mines} mines',
+                            onTap: () => _startGame(context, Difficulty.expert),
+                          ),
+                          const SizedBox(height: 15),
+                          DifficultyCard(
+                            difficulty: Difficulty.deadEnd,
+                            title: '☠️ Dead-end',
+                            subtitle:
+                                'Impossible..\n${Difficulty.deadEnd.size}, ${Difficulty.deadEnd.mines} mines',
+                            onTap: () =>
+                                _startGame(context, Difficulty.deadEnd),
+                          ),
+                          const SizedBox(height: 15),
+                          DifficultyCard(
+                            difficulty: null,
+                            title: '🎨 Custom',
+                            subtitle: 'Set your own size and mines',
+                            onTap: () => _showCustomDifficultyDialog(context),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -5,6 +5,7 @@ import 'package:minesweeper/src/core/models/game.dart';
 import 'package:minesweeper/src/feature/app/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/provider/provider.dart';
 import 'package:minesweeper/src/feature/game/widgets/confetti.dart';
+import 'package:minesweeper/src/core/widgets/web_max_width.dart';
 import 'package:minesweeper/src/feature/game/widgets/shaker.dart';
 import 'package:minesweeper/src/feature/game/widgets/status_item.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +52,12 @@ class MinesweeperGameplayScreen extends StatelessWidget {
           animate: controller.game.state == GameState.lose,
           child: Confetti(
             game: game,
-            child: Padding(
+            child: WebMaxWidth(
+              maxWidth: switch (cols) {
+                9 => 600,
+                16 => 1000,
+                _ => double.infinity,
+              },
               padding: const EdgeInsets.all(8),
               child: Column(
                 children: [
