@@ -5,53 +5,83 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="MineSweeper - классическая игра Сапер на Flutter">
+  <meta name="description" content="Классическая игра Сапер на Flutter">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="MineSweeper">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <!-- Theme -->
+  <meta name="theme-color" content="#4CAF50">
 
-  <title>MineSweeper</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="shortcut icon" href="favicon.ico"/>
+
+  <title>MineSweeper - Классическая игра</title>
   <link rel="manifest" href="manifest.json">
-  
-  <!-- Добавить стили для веб-версии -->
+
+  <!-- Preconnects for better font loading (optional) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Базовые стили -->
   <style>
-    body {
+    html, body {
+      height: 100%;
       margin: 0;
       padding: 0;
-      background-color: #f0f0f0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #111;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     }
-    
     .loading {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-size: 18px;
-      color: #666;
+      gap: 12px;
     }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
   </style>
+
+  <script>
+    const serviceWorkerVersion = null;
+  </script>
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <div id="loading" class="loading">
+  <div id="loading" class="loading" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
     Загрузка MineSweeper...
   </div>
-  <script src="flutter_bootstrap.js" async></script>
   <script>
-    // Скрыть загрузочный экран после загрузки Flutter
     window.addEventListener('load', function() {
-      setTimeout(function() {
-        const loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.display = 'none';
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'none';
+            appRunner.runApp();
+          });
         }
-      }, 1000);
+      });
     });
   </script>
 </body>
